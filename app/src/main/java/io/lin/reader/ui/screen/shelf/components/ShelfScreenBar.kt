@@ -107,7 +107,7 @@ fun ShelfScreenTopBar(
                                         SeriesSortMethod.CreateTime -> stringResource(R.string.series_sort_create_time)
                                     },
                                     onClick = {
-                                        onSortMethodChange(SeriesSortMethod.Name)
+                                        onSortMethodChange(method)
                                         sortSubMenuExpanded = false
                                         mainMenuExpanded = false
                                     },

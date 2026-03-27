@@ -99,7 +99,7 @@ fun VolumeBookmarksGroup(
                 .fillMaxWidth()
                 .clip(MaterialTheme.shapes.large) // 为点击水波纹设置圆角
                 .clickable { expanded = !expanded }
-                .padding(vertical = 12.dp, horizontal = 4.dp),
+                .padding(vertical = 12.dp, horizontal = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             VolumeCover(
