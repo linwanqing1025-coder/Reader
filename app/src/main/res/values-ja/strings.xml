@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App name: Untranslatable -->
+
+    <!-- Component -->
+    <string name="blank_screen_notification">ここには何もありません。</string>
+    <string name="cover_error">カバーなし</string>
+    <string name="confirm">確認</string>
+    <string name="cancel">キャンセル</string>
+    <string name="import_book">インポート</string>
+
+
+    <!-- NavigationBar -->
+    <string name="navigation_label_shelf">本棚</string>
+    <string name="navigation_label_favourite">お気に入り</string>
+    <string name="navigation_label_bookmark">しおり</string>
+    <string name="navigation_label_history">履歴</string>
+    <string name="navigation_label_setting">設定</string>
+
+
+    <!-- ShelfScreen -->
+    <string name="shelf_top_bar_sort_submenu">ソート方法のサブメニューを開く</string>
+    <string name="shelf_top_bar_sort_selected">選択済み</string>
+
+    <string name="import_dialog_title">書籍インポートの確認</string>
+    <string name="import_dialog_book">書籍：</string>
+    <string name="import_dialog_book_multiple">さらに%1$d冊の書籍</string>
+    <string name="import_dialog_series">シリーズ：</string>
+    <string name="import_dialog_expand_series">シリーズ一覧を展開</string>
+    <string name="import_dialog_collapse_series">シリーズ一覧を折りたたみ</string>
+    <string name="import_dialog_create_series">新規シリーズを作成</string>
+    <string name="import_dialog_existing_series">既存のシリーズ：</string>
+    <string name="import_dialog_existing_series_selected">選択済み</string>
+    <string name="import_success">インポートに成功しました</string>
+
+    <string name="shelf_menu_edit_name">シリーズ名を編集</string>
+    <string name="shelf_menu_delete">シリーズを削除</string>
+    <string name="shelf_text_field_dialog_title_create">新規シリーズを作成</string>
+    <string name="shelf_text_field_dialog_title_edit">シリーズ名を編集</string>
+    <string name="shelf_text_field_dialog_label">シリーズ名を入力</string>
+    <string name="shelf_text_field_dialog_place_holder">シリーズ名を入力</string>
+    <string name="shelf_text_field_dialog_error">シリーズ名を空にすることはできません</string>
+    <string name="shelf_dialog_title">削除の確認</string>
+
+    <string name="series_delete_notification">シリーズ&lt;b>&lt;i>%1$s&lt;/i>&lt;/b>を削除してもよろしいですか？\n\nこのシリーズ内の全&lt;b>%2$d&lt;/b>冊の書籍も同時に削除されます。\n\nこの操作は元に戻せません。</string>
+    <string name="series_top_bar_selected">選択済み</string>
+    <string name="series_top_bar_sort_submenu">ソート方法のサブメニューを開く</string>
+    <string name="series_top_bar_sort_selected">選択済み</string>
+    <string name="series_top_bar_select_all">すべて選択</string>
+    <string name="series_top_bar_cancel_selecting">選択を解除</string>
+    <string name="series_delete_volumes">選択した書籍を削除</string>
+    <string name="volume_delete_notification">選択した&lt;b>%1$d&lt;/b>冊の書籍を削除してもよろしいですか？\n\nこの操作は元に戻せません。</string>
+    <string name="volume_clear_warning">\n&lt;b>警告：&lt;/b>\n選択したシリーズ内のすべての書籍を削除しようとしています。\nシリーズ自体も完全に削除されます。</string>
+
+    <!-- FavouriteScreen -->
+    <string name="favourite_top_bar_sort">お気に入りのソート</string>
+    <string name="favourite_top_bar_sort_submenu">ソート方法のサブメニューを開く</string>
+    <string name="favourite_top_bar_sort_selected">選択済み</string>
+    <string name="favourite_top_bar_clear_bookmark">すべてのお気に入りを削除</string>
+    <string name="favourite_menu_remove">お気に入りから削除</string>
+    <string name="favourite_dialog_title">クリアの確認</string>
+    <string name="favourite_clear_notification">すべてのお気に入り書籍をクリアしてもよろしいですか？\n\nこの操作は元に戻せません。</string>
+    <string name="favourite_no_favourite_to_clear">クリアできるお気に入りがありません</string>
+    <string name="favourite_favourite_cleared">%1$d件のお気に入りをクリアしました</string>
+
+
+    <!-- BookmarkScreen -->
+    <string name="bookmark_top_bar_sort_selected">選択済み</string>
+    <string name="bookmark_top_bar_clear_bookmark">すべてのしおりを削除</string>
+    <string name="bookmark_item_bookmark_count">%1$d個のしおり</string>
+    <string name="bookmark_item_pages">%1$d / %2$d ページ</string>
+    <string name="bookmark_item_delete">このしおりを削除</string>
+    <string name="bookmark_delete_item_notification">&lt;b>&lt;i>%1$s&lt;/i>&lt;/b>の&lt;b>%2$d&lt;/b>ページのしおりを削除してもよろしいですか？\n\nこの操作は元に戻せません。</string>
+    <string name="bookmark_clear_bookmark_notification">すべてのしおりをクリアしてもよろしいですか？\n\nこの操作は元に戻せません。</string>
+    <string name="bookmark_dialog_title_delete">削除の確認</string>
+    <string name="bookmark_dialog_title_clear">クリアの確認</string>
+    <string name="bookmark_no_bookmark_to_clear">クリアできるしおりがありません</string>
+    <string name="bookmark_bookmark_cleared">%1$d個のしおりをクリアしました</string>
+
+
+    <!-- HistoryScreen -->
+    <string name="history_top_bar_display_unread_books">未読書籍を表示</string>
+    <string name="history_top_bar_clear_history">すべての閲覧履歴をクリア</string>
+    <string name="history_item_pages">%1$d / %2$d ページ</string>
+    <string name="history_item_delete">この履歴を削除</string>
+    <string name="history_item_never_read">一度も読んでいません</string>
+    <string name="history_unread_books">未読書籍：</string>
+    <string name="history_dialog_title_clear">クリアの確認</string>
+    <string name="history_delete_item_notification">&lt;b>&lt;i>%1$s&lt;/i>&lt;/b>の閲覧履歴をクリアしてもよろしいですか？\n\nこの操作は元に戻せません。</string>
+    <string name="history_clear_history_notification">すべての閲覧履歴をクリアしてもよろしいですか？\n\nこの操作は元に戻せません。</string>
+    <string name="history_no_history_to_clear">クリアできる履歴がありません</string>
+    <string name="history_history_cleared">%1$d件の履歴をクリアしました</string>
+
+
+    <!-- SettingScreen -->
+    <!-- Main Options -->
+    <string name="setting_appearance">アプリの外観</string>
+    <string name="setting_sort">ソート</string>
+    <string name="setting_clear_history">閲覧履歴をクリア</string>
+    <string name="setting_show_unread_books">未読書籍を表示</string>
+    <string name="setting_expand_unread_books">未読書籍を展開</string>
+    <string name="setting_reader_color">リーダーの配色</string>
+    <string name="setting_reading_mode">読書モード</string>
+    <string name="setting_interaction_style">操作スタイル</string>
+    <string name="setting_other_reading_settings">その他の読書設定</string>
+    <string name="setting_reset_all">すべての設定をリセット</string>
+    <string name="setting_reset_dialog_title">リセットの確認</string>
+    <string name="setting_reset_notification">すべての設定を初期値にリセットしてもよろしいですか？\n\nこの操作は元に戻せません。</string>
+    <string name="setting_reset_done">すべての設定がリセットされました</string>
+
+    <!-- Appearance Details -->
+    <string name="appearance_label_theme">テーマ</string>
+    <string name="appearance_label_language">言語</string>
+    <string name="appearance_theme_color">テーマカラー</string>
+    <string name="appearance_theme_contrast">コントラスト</string>
+    <string name="appearance_theme_dark">ダークモード</string>
+    <string name="theme_color_dynamic">ダイナミック</string>
+    <string name="theme_color_default">デフォルト</string>
+    <string name="theme_color_maple">メープル</string>
+    <string name="theme_color_meadow">ミードウ</string>
+    <string name="theme_color_breeze">ブリーズ</string>
+    <string name="theme_color_honey">ハニー</string>
+    <string name="contrast_light">ライト</string>
+    <string name="contrast_medium">ミディアム</string>
+    <string name="contrast_high">ハイ</string>
+    <string name="dark_mode_system">システム</string>
+    <string name="dark_mode_light">ライト</string>
+    <string name="dark_mode_dark">ダーク</string>
+    <string name="language_system">システム標準</string>
+    <string name="language_english">英語</string>
+    <string name="language_chinese_simplified">中国語（簡体字）</string>
+    <string name="language_chinese_traditional">中国語（繁体字）</string>
+    <string name="language_japanese">日本語</string>
+
+    <!-- Sort Details -->
+    <string name="sort_series_sort">シリーズのソート</string>
+    <string name="sort_volume_sort">書籍のソート</string>
+    <string name="sort_bookmark_sort">しおりのソート</string>
+    <string name="series_sort_name">名前</string>
+    <string name="series_sort_create_time">作成日時</string>
+    <string name="volume_sort_name">名前</string>
+    <string name="volume_sort_create_time">作成日時</string>
+    <string name="volume_sort_last_read_time">最終閲覧日時</string>
+    <string name="bookmark_sort_volume_name">書籍名</string>
+    <string name="bookmark_sort_volume_create_time">書籍の作成日時</string>
+    <string name="bookmark_sort_last_read_time">最終閲覧日時</string>
+    <string name="bookmark_sort_latest_bookmark_time">最新のしおり作成日時</string>
+    <string name="sort_by">ソート基準</string>
+    <string name="sort_order">ソート順</string>
+    <string name="sort_ascending">昇順</string>
+    <string name="sort_descending">降順</string>
+
+    <!-- Reading Mode Details -->
+    <string name="reading_mode_label_padding">ページ間隔</string>
+    <string name="reading_mode_label_single">シングルページ</string>
+    <string name="reading_mode_label_dual">デュアルページ</string>
+    <string name="reading_mode_label_scrollable">スクロール</string>
+    <string name="page_alignment_vertical">垂直</string>
+    <string name="page_alignment_horizontal">水平</string>
+
+    <!-- Reader Color Details -->
+    <string name="reader_color_label_preview">プレビュー</string>
+    <string name="reader_color_label_color">カラー</string>
+    <string name="reader_color_background">背景色</string>
+    <string name="reader_color_page">ページカラー</string>
+    <string name="reader_color_filter">フィルターカラー</string>
+    <string name="color_picker">カラーピッカー</string>
+    <string name="color_picker_navigation">戻る</string>
+    <string name="color_picker_standard">標準カラー</string>
+    <string name="color_picker_custom">カスタムカラー</string>
+    <string name="color_picker_opacity">不透明度</string>
+    <string name="color_picker_placer_holder">例：#FFFFFF</string>
+    <string name="color_picker_label">16進数カラーコード</string>
+    <string name="color_picker_error">無効な16進数形式です</string>
+
+    <!-- Interaction Details -->
+    <string name="interaction_label">操作方式</string>
+    <string name="interaction_hint_previous">前のページ</string>
+    <string name="interaction_hint_next">次のページ</string>
+    <string name="interaction_hint_menu">メニュー</string>
+    <string name="interaction_style_vertical">垂直型</string>
+    <string name="interaction_style_horizontal">水平型</string>
+    <string name="interaction_style_L">L型</string>
+    <string name="interaction_style_Mixed">ミックス型</string>
+
+    <!-- Other Reading Setting Details -->
+    <string name="other_reading_settings_label">その他の読書設定</string>
+    <string name="other_reading_settings_rtl">右から左モード</string>
+    <string name="other_reading_settings_separate_cover">表紙を分離</string>
+    <string name="other_reading_settings_remove_gutter">のどを削除</string>
+    <string name="other_reading_settings_fixed_page_indicator">固定ページインジケーター</string>
+
+    <!-- ReadingScreen -->
+    <string name="reading_bookmark_delete_notification">&lt;b>%1$d&lt;/b>ページのしおりを削除してもよろしいですか？\n\nこの操作は元に戻せません。</string>
+    <string name="reading_bookmark_dialog_title_add">しおりを追加</string>
+    <string name="reading_bookmark_dialog_placeholder">しおりのラベルを入力</string>
+    <string name="reading_bookmark_dialog_label">ラベル</string>
+    <string name="reading_bookmark_dialog_error">ラベルを空にすることはできません</string>
+    <string name="reading_bookmark_dialog_location">位置</string>
+    <string name="reading_bookmark_dialog_location_detail">%2$dページ中 %1$dページ</string>
+    <string name="reading_bookmark_directory_add_bookmark">しおりを追加</string>
+    <string name="reading_bookmark_directory_no_bookmark">しおりがまだありません</string>
+    <string name="reading_bookmark_menu_tab_reading">読書</string>
+    <string name="reading_bookmark_menu_tab_interaction">操作</string>
+    <string name="reading_bookmark_menu_tab_color">カラー</string>
+    <string name="reading_bookmark_menu_tab_others">その他</string>
+    <string name="reading_removed_from_favourite">お気に入りから削除しました</string>
+    <string name="reading_added_to_favourite">お気に入りに追加しました</string>
+    <string name="reading_rlt_mode_on">右から左モードがオンになりました</string>
+    <string name="reading_rlt_mode_off">右から左モードがオフになりました</string>
+    <string name="reading_remove_gutter_on">のど削除がオンになりました</string>
+    <string name="reading_remove_gutter_off">のど削除がオフになりました</string>
+</resources>

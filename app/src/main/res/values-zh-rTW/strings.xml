@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App name: Untranslatable -->
+
+    <!-- Component -->
+    <string name="blank_screen_notification">這裡什麼也沒有。</string>
+    <string name="cover_error">無封面</string>
+    <string name="confirm">確認</string>
+    <string name="cancel">取消</string>
+    <string name="import_book">匯入</string>
+
+
+    <!-- NavigationBar -->
+    <string name="navigation_label_shelf">書櫃</string>
+    <string name="navigation_label_favourite">我的最愛</string>
+    <string name="navigation_label_bookmark">書籤</string>
+    <string name="navigation_label_history">閱讀紀錄</string>
+    <string name="navigation_label_setting">設定</string>
+
+
+    <!-- ShelfScreen -->
+    <string name="shelf_top_bar_sort_submenu">開啟排序方式子選單</string>
+    <string name="shelf_top_bar_sort_selected">已選取</string>
+
+    <string name="import_dialog_title">確認匯入書籍</string>
+    <string name="import_dialog_book">書籍：</string>
+    <string name="import_dialog_book_multiple">以及另外%1$d本書</string>
+    <string name="import_dialog_series">系列：</string>
+    <string name="import_dialog_expand_series">展開系列列表</string>
+    <string name="import_dialog_collapse_series">收起系列列表</string>
+    <string name="import_dialog_create_series">建立新系列</string>
+    <string name="import_dialog_existing_series">現有系列：</string>
+    <string name="import_dialog_existing_series_selected">已選取</string>
+    <string name="import_success">匯入成功</string>
+
+    <string name="shelf_menu_edit_name">編輯系列名稱</string>
+    <string name="shelf_menu_delete">刪除系列</string>
+
+    <string name="shelf_text_field_dialog_title_create">建立新系列</string>
+    <string name="shelf_text_field_dialog_title_edit">編輯系列名稱</string>
+    <string name="shelf_text_field_dialog_label">輸入系列名稱</string>
+    <string name="shelf_text_field_dialog_place_holder">輸入系列名稱</string>
+    <string name="shelf_text_field_dialog_error">系列名稱不能為空白</string>
+
+    <string name="shelf_dialog_title">刪除確認</string>
+    <string name="series_delete_notification">你確定要刪除&lt;b>&lt;i>%1$s&lt;/i>&lt;/b>系列嗎？\n\n此系列下的所有&lt;b>%2$d&lt;/b>本書籍也將被刪除。\n\n此操作無法復原。</string>
+
+    <string name="series_top_bar_selected">已選取</string>
+    <string name="series_top_bar_sort_submenu">開啟排序方式子選單</string>
+    <string name="series_top_bar_sort_selected">已選取</string>
+    <string name="series_top_bar_select_all">全選</string>
+    <string name="series_top_bar_cancel_selecting">取消選擇</string>
+
+    <string name="series_delete_volumes">刪除選取的書籍</string>
+    <string name="volume_delete_notification">你確定要刪除選取的&lt;b>%1$d&lt;/b>本書嗎？\n\n此操作無法復原。</string>
+    <string name="volume_clear_warning">\n&lt;b>警告：&lt;/b>\n你即將刪除所选系列中的所有書籍。\n該系列本身也將被永久移除。</string>
+
+
+    <!-- FavouriteScreen -->
+    <string name="favourite_top_bar_sort">我的最愛排序</string>
+    <string name="favourite_top_bar_sort_submenu">開啟排序方式子選單</string>
+    <string name="favourite_top_bar_sort_selected">已選取</string>
+    <string name="favourite_top_bar_clear_bookmark">清空所有我的最愛</string>
+    <string name="favourite_menu_remove">從我的最愛中移除</string>
+    <string name="favourite_dialog_title">清空確認</string>
+    <string name="favourite_clear_notification">你確定要清空所有我的最愛書籍嗎？\n\n此操作無法復原。</string>
+    <string name="favourite_no_favourite_to_clear">暫無可清空的我的最愛</string>
+    <string name="favourite_favourite_cleared">已清空%1$d本我的最愛</string>
+
+    <!-- BookmarkScreen -->
+    <string name="bookmark_top_bar_sort_selected">已選取</string>
+    <string name="bookmark_top_bar_clear_bookmark">刪除所有書籤</string>
+    <string name="bookmark_item_bookmark_count">%1$d個書籤</string>
+    <string name="bookmark_item_pages">%1$d / %2$d 頁</string>
+    <string name="bookmark_item_delete">刪除此書籤</string>
+    <string name="bookmark_delete_item_notification">你確定要刪除&lt;b>&lt;i>%1$s&lt;/i>&lt;/b>中第&lt;b>%2$d&lt;/b>頁的書籤嗎？\n\n此操作無法復原。</string>
+    <string name="bookmark_clear_bookmark_notification">你確定要清空所有書籤嗎？\n\n此操作無法復原。</string>
+    <string name="bookmark_dialog_title_delete">刪除確認</string>
+    <string name="bookmark_dialog_title_clear">清空確認</string>
+    <string name="bookmark_no_bookmark_to_clear">暫無可清空的書籤</string>
+    <string name="bookmark_bookmark_cleared">已清空%1$d個書籤</string>
+
+
+    <!-- HistoryScreen -->
+    <string name="history_top_bar_display_unread_books">顯示未讀書籍</string>
+    <string name="history_top_bar_clear_history">清空所有閱讀紀錄</string>
+    <string name="history_item_pages">%1$d / %2$d 頁</string>
+    <string name="history_item_delete">刪除此紀錄</string>
+    <string name="history_item_never_read">從未閱讀</string>
+    <string name="history_unread_books">未讀書籍：</string>
+    <string name="history_dialog_title_clear">清空確認</string>
+    <string name="history_delete_item_notification">你確定要清空&lt;b>&lt;i>%1$s&lt;/i>&lt;/b>的閱讀紀錄嗎？\n\n此操作無法復原。</string>
+    <string name="history_clear_history_notification">你確定要清空所有閱讀紀錄嗎？\n\n此操作無法復原。</string>
+    <string name="history_no_history_to_clear">暫無可清空的紀錄</string>
+    <string name="history_history_cleared">已清空%1$d條紀錄</string>
+
+
+    <!-- SettingScreen -->
+
+    <!-- Main Options -->
+    <string name="setting_appearance">應用外觀</string>
+    <string name="setting_sort">排序</string>
+
+    <string name="setting_clear_history">清空閱讀紀錄</string>
+    <string name="setting_show_unread_books">顯示未讀書籍</string>
+    <string name="setting_expand_unread_books">展開未讀書籍</string>
+
+    <string name="setting_reader_color">閱讀器配色</string>
+    <string name="setting_reading_mode">閱讀模式</string>
+    <string name="setting_interaction_style">互動樣式</string>
+    <string name="setting_other_reading_settings">其他閱讀設定</string>
+
+    <string name="setting_reset_all">重設所有設定</string>
+    <string name="setting_reset_dialog_title">重設確認</string>
+    <string name="setting_reset_notification">你確定要將所有設定重設為預設值嗎？\n\n此操作無法復原。</string>
+    <string name="setting_reset_done">所有設定已重設</string>
+
+    <!-- Appearance Details -->
+    <string name="appearance_label_theme">佈景主題</string>
+    <string name="appearance_label_language">語言</string>
+    <string name="appearance_theme_color">主題色</string>
+    <string name="appearance_theme_contrast">色彩對比度</string>
+    <string name="appearance_theme_dark">深色模式</string>
+
+    <string name="theme_color_dynamic">動態配色</string>
+    <string name="theme_color_default">預設</string>
+    <string name="theme_color_maple">楓葉紅</string>
+    <string name="theme_color_meadow">原野綠</string>
+    <string name="theme_color_breeze">海風藍</string>
+    <string name="theme_color_honey">蜂蜜黃</string>
+
+    <string name="contrast_light">淺</string>
+    <string name="contrast_medium">中</string>
+    <string name="contrast_high">高</string>
+
+    <string name="dark_mode_system">跟隨系統</string>
+    <string name="dark_mode_light">淺色</string>
+    <string name="dark_mode_dark">深色</string>
+
+    <string name="language_system">系統預設</string>
+    <string name="language_english">英文</string>
+    <string name="language_chinese_simplified">中文（簡體）</string>
+    <string name="language_chinese_traditional">中文（繁體）</string>
+    <string name="language_japanese">日文</string>
+
+    <!-- Sort Details -->
+    <string name="sort_series_sort">系列排序</string>
+    <string name="sort_volume_sort">書籍排序</string>
+    <string name="sort_bookmark_sort">書籤排序</string>
+
+    <string name="series_sort_name">名稱</string>
+    <string name="series_sort_create_time">建立時間</string>
+    <string name="volume_sort_name">名稱</string>
+    <string name="volume_sort_create_time">建立時間</string>
+    <string name="volume_sort_last_read_time">最後閱讀時間</string>
+    <string name="bookmark_sort_volume_name">書籍名稱</string>
+    <string name="bookmark_sort_volume_create_time">書籍建立時間</string>
+    <string name="bookmark_sort_last_read_time">最後閱讀時間</string>
+    <string name="bookmark_sort_latest_bookmark_time">最新書籤時間</string>
+
+    <string name="sort_by">排序依據</string>
+    <string name="sort_order">排序順序</string>
+    <string name="sort_ascending">升序</string>
+    <string name="sort_descending">降序</string>
+
+    <!-- Reading Mode Details -->
+    <string name="reading_mode_label_padding">頁面間距</string>
+    <string name="reading_mode_label_single">單頁模式</string>
+    <string name="reading_mode_label_dual">雙頁模式</string>
+    <string name="reading_mode_label_scrollable">滾動模式</string>
+    <string name="page_alignment_vertical">垂直分布</string>
+    <string name="page_alignment_horizontal">水平分布</string>
+
+
+    <!-- Reader Color Details -->
+    <string name="reader_color_label_preview">預覽</string>
+    <string name="reader_color_label_color">顏色</string>
+
+    <string name="reader_color_background">背景色</string>
+    <string name="reader_color_page">頁面底色</string>
+    <string name="reader_color_filter">濾鏡色</string>
+
+    <string name="color_picker">調色盤</string>
+    <string name="color_picker_navigation">返回</string>
+    <string name="color_picker_standard">標準色</string>
+    <string name="color_picker_custom">自定義顏色</string>
+    <string name="color_picker_opacity">不透明度</string>
+    <string name="color_picker_placer_holder">例如：#FFFFFF</string>
+    <string name="color_picker_label">十六進位顏色值</string>
+    <string name="color_picker_error">無效的十六進位格式</string>
+
+    <!-- Interaction Details -->
+    <string name="interaction_label">互動方式</string>
+    <string name="interaction_hint_previous">上一頁</string>
+    <string name="interaction_hint_next">下一頁</string>
+    <string name="interaction_hint_menu">選單</string>
+    <string name="interaction_style_vertical">垂直式</string>
+    <string name="interaction_style_horizontal">水平式</string>
+    <string name="interaction_style_L">L型</string>
+    <string name="interaction_style_Mixed">混合式</string>
+
+    <!-- Other Reading Setting Details -->
+    <string name="other_reading_settings_label">其他閱讀設定</string>
+    <string name="other_reading_settings_rtl">從右至左模式</string>
+    <string name="other_reading_settings_separate_cover">分離封面</string>
+    <string name="other_reading_settings_remove_gutter">消除訂口</string>
+    <string name="other_reading_settings_fixed_page_indicator">固定頁碼指示器</string>
+
+    <!-- ReadingScreen -->
+    <string name="reading_bookmark_delete_notification">你確定要刪除第&lt;b>%1$d&lt;/b>頁的書籤嗎？\n\n此操作無法復原。</string>
+    <string name="reading_bookmark_dialog_title_add">新增書籤</string>
+    <string name="reading_bookmark_dialog_placeholder">輸入書籤標籤</string>
+    <string name="reading_bookmark_dialog_label">標籤</string>
+    <string name="reading_bookmark_dialog_error">標籤不能為空白</string>
+    <string name="reading_bookmark_dialog_location">位置</string>
+    <string name="reading_bookmark_dialog_location_detail">第%1$d頁 / 共%2$d頁</string>
+
+    <string name="reading_bookmark_directory_add_bookmark">新增書籤</string>
+    <string name="reading_bookmark_directory_no_bookmark">暫無書籤</string>
+
+    <string name="reading_bookmark_menu_tab_reading">閱讀</string>
+    <string name="reading_bookmark_menu_tab_interaction">互動</string>
+    <string name="reading_bookmark_menu_tab_color">顏色</string>
+    <string name="reading_bookmark_menu_tab_others">其他</string>
+
+
+    <string name="reading_removed_from_favourite">已從我的最愛中移除</string>
+    <string name="reading_added_to_favourite">已新增至我的最愛</string>
+    <string name="reading_rlt_mode_on">從右至左模式已開啟</string>
+    <string name="reading_rlt_mode_off">從右至左模式已關閉</string>
+    <string name="reading_remove_gutter_on">移除訂口已開啟</string>
+    <string name="reading_remove_gutter_off">移除訂口已關閉</string>
+</resources>

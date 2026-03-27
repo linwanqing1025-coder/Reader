@@ -1,0 +1,47 @@
+package io.lin.reader.data.internaldata
+
+class Kaomoji {
+    companion object {
+        // 颜文字来源于搜狗输入法
+        private val kaomojiList = listOf(
+            // 开心
+            "(ﾉﾟ▽ﾟ)ﾉ",
+            "ヾ(^ ∀ ^)ﾉ",
+            "(⁎˃ᴗ˂⁎)",
+            "(o´▽｀o)",
+            "(＾ω＾)",
+
+            // 伤心
+            "(；′⌒`)",
+            "ヽ(。>д<)p",
+            "(T ^ T) ",
+            "(ŎдŎ；)",
+            "/(ToT)/~~",
+
+            // 生气
+            "(╬￣皿￣)=○",
+            "ヽ( `Д´ )ﾉ",
+            "(*｀Ω´*)v",
+            "<( ' ^ ' )>",
+            "o(≧口≦)o",
+
+            // 无语
+            "(￣-￣)",
+            "(・o・)",
+            "((´-_-)-_-)-_-)",
+            "┐(‘~'；)┌",
+            "(・_・)┌",
+
+            // 懵逼
+            "(⊙_⊙)?",
+            "Σ(☉▽☉\"a",
+            "(⊙﹏⊙)",
+            "o((⊙﹏⊙))o",
+            "m(⊙ ▽ ⊙)m"
+        )
+
+        fun getRandomKaomoji(): String {
+            return kaomojiList.random()
+        }
+    }
+}

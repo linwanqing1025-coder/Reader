@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App name: Untranslatable -->
+    <string name="app_name" translatable="false">Reader</string>
+
+    <!-- Component -->
+    <string name="blank_screen_notification">Nothing here.</string>
+    <string name="cover_error">No Cover</string>
+    <string name="confirm">Confirm</string>
+    <string name="cancel">Cancel</string>
+    <string name="import_book">Import</string>
+
+
+    <!-- NavigationBar -->
+    <string name="navigation_label_shelf">Shelf</string>
+    <string name="navigation_label_favourite">Favourite</string>
+    <string name="navigation_label_bookmark">Bookmark</string>
+    <string name="navigation_label_history">History</string>
+    <string name="navigation_label_setting">Setting</string>
+
+
+    <!-- ShelfScreen -->
+    <string name="shelf_top_bar_sort_submenu">Open Sort Method Sub-menu</string>
+    <string name="shelf_top_bar_sort_selected">Selected</string>
+
+    <string name="import_dialog_title">Confirm Book Import</string>
+    <string name="import_dialog_book">Book:</string>
+    <string name="import_dialog_book_multiple">and %1$d more books</string>
+    <string name="import_dialog_series">Series:</string>
+    <string name="import_dialog_expand_series">Expand series list</string>
+    <string name="import_dialog_collapse_series">Collapse series list</string>
+    <string name="import_dialog_create_series">Create a new series</string>
+    <string name="import_dialog_existing_series">Existing series:</string>
+    <string name="import_dialog_existing_series_selected">Selected</string>
+    <string name="import_success">Import success</string>
+
+    <string name="shelf_menu_edit_name">Edit Series Name</string>
+    <string name="shelf_menu_delete">Delete Series</string>
+
+    <string name="shelf_text_field_dialog_title_create">Create New Series</string>
+    <string name="shelf_text_field_dialog_title_edit">Edit Series Name</string>
+    <string name="shelf_text_field_dialog_label">Enter Series Name</string>
+    <string name="shelf_text_field_dialog_place_holder">Enter Series Name</string>
+    <string name="shelf_text_field_dialog_error">The series name cannot be empty</string>
+
+    <string name="shelf_dialog_title">Delete Confirmation</string>
+    <string name="series_delete_notification">Are you sure you want to delete the &lt;b>&lt;i>%1$s&lt;/i>&lt;/b> series?\n\nAll &lt;b>%2$d&lt;/b> book(s) in this series will also be deleted.\n\nThis action cannot be undone.</string>
+
+    <string name="series_top_bar_selected">selected</string>
+    <string name="series_top_bar_sort_submenu">Open Sort Method Sub-menu</string>
+    <string name="series_top_bar_sort_selected">Selected</string>
+    <string name="series_top_bar_select_all">Select all</string>
+    <string name="series_top_bar_cancel_selecting">Cancel selecting</string>
+
+    <string name="series_delete_volumes">Delete selected books</string>
+    <string name="volume_delete_notification">Are you sure you want to delete the selected &lt;b>%1$d&lt;/b> book(s)?\n\nThis action cannot be undone.</string>
+    <string name="volume_clear_warning">\n&lt;b>Warning: &lt;/b>\nYou are about to delete all books in the selected series.\nThe series itself will also be permanently removed.</string>
+
+
+    <!-- FavouriteScreen -->
+    <string name="favourite_top_bar_sort">Favourites sort</string>
+    <string name="favourite_top_bar_sort_submenu">Open Sort Method Sub-menu</string>
+    <string name="favourite_top_bar_sort_selected">Selected</string>
+    <string name="favourite_top_bar_clear_bookmark">Delete all favourites</string>
+    <string name="favourite_menu_remove">Remove from favourites</string>
+    <string name="favourite_dialog_title">Clear Confirmation</string>
+    <string name="favourite_clear_notification">Are you sure you want to clear all favourite books?\n\nThis action cannot be undone.</string>
+    <string name="favourite_no_favourite_to_clear">No favourite to clear</string>
+    <string name="favourite_favourite_cleared">%1$d favourite(s) cleared</string>
+
+    <!-- BookmarkScreen -->
+    <string name="bookmark_top_bar_sort_selected">Selected</string>
+    <string name="bookmark_top_bar_clear_bookmark">Delete all bookmarks</string>
+    <string name="bookmark_item_bookmark_count">%1$d bookmark(s)</string>
+    <string name="bookmark_item_pages">%1$d / %2$d pages</string>
+    <string name="bookmark_item_delete">Delete this bookmark</string>
+    <string name="bookmark_delete_item_notification">Are you sure you want to delete the bookmark at page &lt;b>%2$d&lt;/b> of &lt;b>&lt;i>%1$s&lt;/i>&lt;/b> ?\n\nThis action cannot be undone.</string>
+    <string name="bookmark_clear_bookmark_notification">Are you sure you want to clear all bookmarks?\n\nThis action cannot be undone.</string>
+    <string name="bookmark_dialog_title_delete">Delete Confirmation</string>
+    <string name="bookmark_dialog_title_clear">Clear Confirmation</string>
+    <string name="bookmark_no_bookmark_to_clear">No bookmark to clear</string>
+    <string name="bookmark_bookmark_cleared">%1$d bookmark(s) cleared</string>
+
+
+    <!-- HistoryScreen -->
+    <string name="history_top_bar_display_unread_books">Display unread books</string>
+    <string name="history_top_bar_clear_history">Clear all reading history</string>
+    <string name="history_item_pages">%1$d / %2$d pages</string>
+    <string name="history_item_delete">Delete this history</string>
+    <string name="history_item_never_read">Never read</string>
+    <string name="history_unread_books">Unread books: </string>
+    <string name="history_dialog_title_clear">Clear Confirmation</string>
+    <string name="history_delete_item_notification">Are you sure you want to clear the reading history of &lt;b>&lt;i>%1$s&lt;/i>&lt;/b>?\n\nThis action cannot be undone.</string>
+    <string name="history_clear_history_notification">Are you sure you want to clear all reading history?\n\nThis action cannot be undone.</string>
+    <string name="history_no_history_to_clear">No history to clear</string>
+    <string name="history_history_cleared">%1$d history cleared</string>
+
+
+    <!-- SettingScreen -->
+
+    <!-- Main Options -->
+    <string name="setting_appearance">App appearance</string>
+    <string name="setting_sort">Sort</string>
+
+    <string name="setting_clear_history">Clear reading history</string>
+    <string name="setting_show_unread_books">Show unread books</string>
+    <string name="setting_expand_unread_books">Expand unread books</string>
+
+    <string name="setting_reader_color">Reader color</string>
+    <string name="setting_reading_mode">Reading mode</string>
+    <string name="setting_interaction_style">Interaction style</string>
+    <string name="setting_other_reading_settings">Other reading settings</string>
+
+    <string name="setting_reset_all">Reset all setting</string>
+    <string name="setting_reset_dialog_title">Reset Confirmation</string>
+    <string name="setting_reset_notification">Are you sure you want to reset all settings to default?\n\nThis action cannot be undone.</string>
+    <string name="setting_reset_done">All settings have been reset</string>
+
+    <!-- Appearance Details -->
+    <string name="appearance_label_theme">Theme</string>
+    <string name="appearance_label_language">Language</string>
+    <string name="appearance_theme_color">Theme Color</string>
+    <string name="appearance_theme_contrast">Color Contrast</string>
+    <string name="appearance_theme_dark">Dark Mode</string>
+
+    <string name="theme_color_dynamic">Dynamic</string>
+    <string name="theme_color_default">Default</string>
+    <string name="theme_color_maple">Maple</string>
+    <string name="theme_color_meadow">Meadow</string>
+    <string name="theme_color_breeze">Breeze</string>
+    <string name="theme_color_honey">Honey</string>
+
+    <string name="contrast_light">Light</string>
+    <string name="contrast_medium">Medium</string>
+    <string name="contrast_high">High</string>
+
+    <string name="dark_mode_system">System</string>
+    <string name="dark_mode_light">Light</string>
+    <string name="dark_mode_dark">Dark</string>
+
+    <string name="language_system">System Default</string>
+    <string name="language_english">English</string>
+    <string name="language_chinese_simplified">Chinese (Simplified)</string>
+    <string name="language_chinese_traditional">Chinese (Traditional)</string>
+    <string name="language_japanese">Japanese</string>
+
+    <!-- Sort Details -->
+    <string name="sort_series_sort">Series Sort</string>
+    <string name="sort_volume_sort">Volume Sort</string>
+    <string name="sort_bookmark_sort">Bookmark Sort</string>
+
+    <string name="series_sort_name">Name</string>
+    <string name="series_sort_create_time">Create Time</string>
+    <string name="volume_sort_name">Name</string>
+    <string name="volume_sort_create_time">Create Time</string>
+    <string name="volume_sort_last_read_time">Last Read Time</string>
+    <string name="bookmark_sort_volume_name">Volume Name</string>
+    <string name="bookmark_sort_volume_create_time">Volume Create Time</string>
+    <string name="bookmark_sort_last_read_time">Last Read Time</string>
+    <string name="bookmark_sort_latest_bookmark_time">Latest Bookmark Time</string>
+
+    <string name="sort_by">Sort by</string>
+    <string name="sort_order">Order</string>
+    <string name="sort_ascending">Ascending</string>
+    <string name="sort_descending">Descending</string>
+
+    <!-- Reading Mode Details -->
+    <string name="reading_mode_label_padding">Padding Between Pages</string>
+    <string name="reading_mode_label_single">Single Page</string>
+    <string name="reading_mode_label_dual">Dual Page</string>
+    <string name="reading_mode_label_scrollable">Scrollable</string>
+    <string name="page_alignment_vertical">Vertical</string>
+    <string name="page_alignment_horizontal">Horizontal</string>
+
+
+    <!-- Reader Color Details -->
+    <string name="reader_color_label_preview">Preview</string>
+    <string name="reader_color_label_color">Color</string>
+
+    <string name="reader_color_background">Background color</string>
+    <string name="reader_color_page">Page color</string>
+    <string name="reader_color_filter">Filter color</string>
+
+    <string name="color_picker">Color Picker</string>
+    <string name="color_picker_navigation">Turn Back</string>
+    <string name="color_picker_standard">Standard Color</string>
+    <string name="color_picker_custom">Custom Color</string>
+    <string name="color_picker_opacity">Opacity</string>
+    <string name="color_picker_placer_holder">e.g. #FFFFFF</string>
+    <string name="color_picker_label">Hexadecimal color</string>
+    <string name="color_picker_error">Invalid hex format</string>
+
+    <!-- Interaction Details -->
+    <string name="interaction_label">Interaction</string>
+    <string name="interaction_hint_previous">Previous</string>
+    <string name="interaction_hint_next">Next</string>
+    <string name="interaction_hint_menu">Menu</string>
+    <string name="interaction_style_vertical">Vertical</string>
+    <string name="interaction_style_horizontal">Horizontal</string>
+    <string name="interaction_style_L">L-Shape</string>
+    <string name="interaction_style_Mixed">Mixed</string>
+
+    <!-- Other Reading Setting Details -->
+    <string name="other_reading_settings_label">Other Reading Settings</string>
+    <string name="other_reading_settings_rtl">Right-to-left mode</string>
+    <string name="other_reading_settings_separate_cover">Separate cover</string>
+    <string name="other_reading_settings_remove_gutter">Remove gutter</string>
+    <string name="other_reading_settings_fixed_page_indicator">Fixed page indicator</string>
+
+    <!-- ReadingScreen -->
+    <string name="reading_bookmark_delete_notification">Are you sure you want to delete the bookmark at page &lt;b>%1$d&lt;/b> ?\n\nThis action cannot be undone.</string>
+    <string name="reading_bookmark_dialog_title_add">Add Bookmark</string>
+    <string name="reading_bookmark_dialog_placeholder">Enter bookmark label</string>
+    <string name="reading_bookmark_dialog_label">Label</string>
+    <string name="reading_bookmark_dialog_error">Label cannot be empty</string>
+    <string name="reading_bookmark_dialog_location">LOCATION</string>
+    <string name="reading_bookmark_dialog_location_detail">Page %1$d of %2$d</string>
+
+    <string name="reading_bookmark_directory_add_bookmark">Add Bookmark</string>
+    <string name="reading_bookmark_directory_no_bookmark">No bookmarks yet</string>
+
+    <string name="reading_bookmark_menu_tab_reading">Reading</string>
+    <string name="reading_bookmark_menu_tab_interaction">Interaction</string>
+    <string name="reading_bookmark_menu_tab_color">Color</string>
+    <string name="reading_bookmark_menu_tab_others">Others</string>
+
+
+    <string name="reading_removed_from_favourite">Removed from favourites</string>
+    <string name="reading_added_to_favourite">Added to favourites</string>
+    <string name="reading_rlt_mode_on">Right-to-left mode is on</string>
+    <string name="reading_rlt_mode_off">Right-to-left mode is off</string>
+    <string name="reading_remove_gutter_on">Remove gutter is on</string>
+    <string name="reading_remove_gutter_off">Remove gutter is off</string>
+</resources>

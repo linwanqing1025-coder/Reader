@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="composable_rounded_corner_radius">16dp</dimen>
+
+    <dimen name="size_of_arrow_inside_importing_dialog">16dp</dimen>
+    <dimen name="dialog_size">300dp</dimen>
+
+    <dimen name="padding_unit">4dp</dimen>
+    <dimen name="inner_padding_of_container">16dp</dimen>
+    <dimen name="half_inner_padding_of_container">8dp</dimen>
+
+    <dimen name="font_size_of_book_container">12.sp</dimen>
+</resources>
