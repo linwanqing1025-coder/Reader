@@ -1,29 +1,47 @@
-Inventory app
-==================================
+# Reader
 
-Solution code for Android Basics with Compose.
+A lightweight, ad-free, privacy-focused open-source e-book reader for Android based on Jetpack Compose, with native PDF support in the current version.
 
-Introduction
-------------
+---
 
-This app is an Inventory tracking app. Demos how to add, update, sell, and delete items from the local database.
-This app demonstrated the use of Android Jetpack component [Room](https://developer.android.com/training/data-storage/room) database.
-The app also leverages [ViewModel](https://developer.android.com/topic/libraries/architecture/viewmodel),
-[Flow](https://developer.android.com/kotlin/flow),
-and [Navigation](https://developer.android.com/topic/libraries/architecture/navigation/).
+## Introduction
+Reader is a lightweight, focused open-source e-book reader built natively for Android, with full native support for PDF format in the current version.
 
-Pre-requisites
---------------
+Designed around the core need for distraction-free digital reading, this app delivers a smooth, lag-free, and completely ad-free reading experience with practical, user-centric features. It allows you to seamlessly import and view local PDF files, offers multiple reading modes, and automatically preserves your reading progress for every book. Additionally, it comes with a full set of reading management tools, including reading history tracking, precise page bookmarking, and a dedicated favorites system to help you organize and access your digital books effortlessly.
 
-You need to know:
-- How to create and use composables.
-- How to navigate between composables, and pass data between them.
-- How to use architecture components including ViewModel, Flow, StateFlow and StateUi.
-- How to use coroutines for long-running tasks.
-- SQLite database and the SQLite query language
+As an independent open-source project, it prioritizes your privacy with only minimal, necessary permissions, and all your reading data is stored locally on your device — no personal data is ever uploaded to any server.
 
+---
 
-Getting Started
----------------
+## ✨ Features
+### 📖 Core Reading Capabilities
+- Native high-performance PDF rendering engine for stable, high-quality file display
+- One-click import of PDF files from your local device storage
+- Smooth page turning, pinch-to-zoom, and precise page jump navigation
+- Automatic reading progress saving: pick up right when reading for every book
 
-1. Download and run the app.
+### 🎨 Optimized Reading Experience
+- Multiple customizable reading modes (Day Mode, Night Mode, Sepia Mode) to fit different book type
+- Adjustable reader color and page padding for personalized reading comfort
+- Distraction-free full-screen reading mode
+
+### 📚 Book & Reading Management
+- Complete reading history tracking: easily revisit books you've read before
+- Unlimited page bookmarking: mark key pages with one tap
+- Favorites system: add your frequently read books to a dedicated collection for quick access
+
+---
+
+## 📱 Getting Started
+1. **Import Your Books**
+   Open the app, tap the "+" button in the bottom right corner, and select PDF files from your local storage to import. Create a new series or select a existing series to contain the import.
+
+2. **Start Reading**
+   Tap any imported book cover in series to open it and start reading. The app will automatically save your progress when you reading the book.
+
+3. **Customize Your Reading Experience**
+   While reading, tap the center of the screen to bring up the control menu:
+   - Switch between reading modes
+   - Adjust page padding and costom reader color
+   - Add bookmarks to the current page
+   - Jump to a specific page or another book in series
