@@ -423,7 +423,7 @@ private fun ScrollableLayout(
 }
 
 @Composable
-fun PageImage(
+private fun PageImage(
     modifier: Modifier = Modifier,
     pageColor: Color,
     bitmap: Bitmap?,

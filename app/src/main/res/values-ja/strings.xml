@@ -208,6 +208,10 @@
     <string name="reading_added_to_favourite">お気に入りに追加しました</string>
     <string name="reading_rlt_mode_on">右から左モードがオンになりました</string>
     <string name="reading_rlt_mode_off">右から左モードがオフになりました</string>
+    <string name="reading_separate_cover_on">表紙分離がオンになりました</string>
+    <string name="reading_separate_cover_off">表紙分離がオフになりました</string>
     <string name="reading_remove_gutter_on">のど削除がオンになりました</string>
     <string name="reading_remove_gutter_off">のど削除がオフになりました</string>
+    <string name="reading_fixed_page_indicator_on">固定ページインジケーターがオンになりました</string>
+    <string name="reading_fixed_page_indicator_off">固定ページインジケーターがオフになりました</string>
 </resources>

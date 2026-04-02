@@ -228,6 +228,10 @@
     <string name="reading_added_to_favourite">已新增至我的最愛</string>
     <string name="reading_rlt_mode_on">從右至左模式已開啟</string>
     <string name="reading_rlt_mode_off">從右至左模式已關閉</string>
+    <string name="reading_separate_cover_on">分離封面已開啟</string>
+    <string name="reading_separate_cover_off">分離封面已關閉</string>
     <string name="reading_remove_gutter_on">移除訂口已開啟</string>
     <string name="reading_remove_gutter_off">移除訂口已關閉</string>
+    <string name="reading_fixed_page_indicator_on">固定頁碼指示器已開啟</string>
+    <string name="reading_fixed_page_indicator_off">固定頁碼指示器已關閉</string>
 </resources>

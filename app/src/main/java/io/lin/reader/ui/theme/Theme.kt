@@ -1,7 +1,6 @@
 package io.lin.reader.ui.theme
 
 import android.app.Activity
-import android.graphics.Color
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
@@ -11,6 +10,7 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
@@ -53,35 +53,28 @@ fun ReaderTheme(
         DarkMode.Dark -> true
     }
 
-    val colorScheme: ColorScheme = when {
-        // 动态颜色 (仅在 ThemeColor 为 Dynamic 且 Android 12+ 时启用)
-        themeColor == ThemeColor.Dynamic && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+    val context = LocalContext.current
+    val colorScheme: ColorScheme = if (themeColor == ThemeColor.Dynamic && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+    } else {
+        val palette: AppThemePalette = when (themeColor) {
+            ThemeColor.Default, ThemeColor.Dynamic -> DefaultTheme
+            ThemeColor.Maple -> MapleTheme
+            ThemeColor.Meadow -> MeadowTheme
+            ThemeColor.Breeze -> BreezeTheme
+            ThemeColor.Honey -> HoneyTheme
         }
-        // 根据 ThemeColor 和 ThemeContrast 选择对应的 ColorScheme
-        else -> {
-            val palette: AppThemePalette = when (themeColor) {
-                ThemeColor.Default -> DefaultTheme
-                ThemeColor.Dynamic -> DefaultTheme
-
-                ThemeColor.Maple -> MapleTheme
-                ThemeColor.Meadow -> MeadowTheme
-                ThemeColor.Breeze -> BreezeTheme
-                ThemeColor.Honey -> HoneyTheme
-            } as AppThemePalette
-            if (darkTheme) {
-                when (themeContrast) {
-                    ThemeContrast.Light -> palette.darkScheme
-                    ThemeContrast.Medium -> palette.mediumContrastDarkColorScheme
-                    ThemeContrast.High -> palette.highContrastDarkColorScheme
-                }
-            } else {
-                when (themeContrast) {
-                    ThemeContrast.Light -> palette.lightScheme
-                    ThemeContrast.Medium -> palette.mediumContrastLightColorScheme
-                    ThemeContrast.High -> palette.highContrastLightColorScheme
-                }
+        if (darkTheme) {
+            when (themeContrast) {
+                ThemeContrast.Light -> palette.darkScheme
+                ThemeContrast.Medium -> palette.mediumContrastDarkColorScheme
+                ThemeContrast.High -> palette.highContrastDarkColorScheme
+            }
+        } else {
+            when (themeContrast) {
+                ThemeContrast.Light -> palette.lightScheme
+                ThemeContrast.Medium -> palette.mediumContrastLightColorScheme
+                ThemeContrast.High -> palette.highContrastLightColorScheme
             }
         }
     }

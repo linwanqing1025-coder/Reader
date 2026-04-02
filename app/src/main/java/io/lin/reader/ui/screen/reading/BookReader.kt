@@ -109,7 +109,7 @@ fun ReaderSurface(
         uiState.initialPage?.let { page ->
             if (page > 0 && page != currentPageNumber) {
                 currentPageNumber = page
-                viewModel.updateLastReadPage(page)
+                viewModel.updateLastRead(page)
             }
         }
     }
@@ -125,10 +125,14 @@ fun ReaderSurface(
 
     val favoriteRemovedText = stringResource(R.string.reading_removed_from_favourite)
     val favoriteAddedText = stringResource(R.string.reading_added_to_favourite)
-    val removeGutterOnText = stringResource(R.string.reading_remove_gutter_on)
-    val removeGutterOffText = stringResource(R.string.reading_remove_gutter_off)
     val rtlModeOnText = stringResource(R.string.reading_rlt_mode_on)
     val rtlModeOffText = stringResource(R.string.reading_rlt_mode_off)
+    val separateCoverOnText = stringResource(R.string.reading_separate_cover_on)
+    val separateCoverOffText = stringResource(R.string.reading_separate_cover_off)
+    val removeGutterOnText = stringResource(R.string.reading_remove_gutter_on)
+    val removeGutterOffText = stringResource(R.string.reading_remove_gutter_off)
+    val fixedPageIndicatorOnText = stringResource(R.string.reading_fixed_page_indicator_on)
+    val fixedPageIndicatorOffText = stringResource(R.string.reading_fixed_page_indicator_off)
 
     BoxWithConstraints(
         modifier = modifier
@@ -144,6 +148,7 @@ fun ReaderSurface(
             pdfRenderer,
             currentPageNumber,
             readingPreferences.readingMode,
+            readingPreferences.removeGutter,
             bitmapWidth
         ) {
             if (pdfRenderer == null) return@LaunchedEffect
@@ -157,7 +162,7 @@ fun ReaderSurface(
                 currentIndex - offset + it
             }.filter { it in 0 until pageCount }
 
-            viewModel.prefetchPages(targetPages, bitmapWidth)
+            viewModel.prefetchPages(targetPages, bitmapWidth, readingPreferences.removeGutter)
         }
 
         GestureInteractionLayer(
@@ -171,13 +176,13 @@ fun ReaderSurface(
                 val step = if (readingPreferences.readingMode == ReadingMode.Dual) 2 else 1
                 val newPage = (currentPageNumber - step).coerceAtLeast(1)
                 currentPageNumber = newPage
-                viewModel.updateLastReadPage(newPage)
+                viewModel.updateLastRead(newPage)
             },
             onNextClick = {
                 val step = if (readingPreferences.readingMode == ReadingMode.Dual) 2 else 1
                 val newPage = (currentPageNumber + step).coerceAtMost(pageCount)
                 currentPageNumber = newPage
-                viewModel.updateLastReadPage(newPage)
+                viewModel.updateLastRead(newPage)
             },
             onCenterClick = {
                 showControls = !showControls
@@ -206,7 +211,7 @@ fun ReaderSurface(
                             val newPage = index + 1
                             if (newPage != currentPageNumber) {
                                 currentPageNumber = newPage
-                                viewModel.updateLastReadPage(newPage)
+                                viewModel.updateLastRead(newPage)
                             }
                         },
                         getPageBitmap = { index -> cachedBitmaps[index] }
@@ -242,7 +247,7 @@ fun ReaderSurface(
             pageCount = pageCount,
             onPageChange = { newPage ->
                 currentPageNumber = newPage
-                viewModel.updateLastReadPage(newPage)
+                viewModel.updateLastRead(newPage)
             },
             isEdgeVolume = uiState.isEdgeVolume,
             onPreviousVolume = { viewModel.switchToPreviousVolume() },
@@ -266,7 +271,11 @@ fun ReaderSurface(
                 viewModel.readingSetting.toggleRtlMode()
             },
             separateCover = readingPreferences.separateCover,
-            toggleSeparateCover = viewModel.readingSetting::toggleSeparateCover,
+            toggleSeparateCover = {
+                val text = if (readingPreferences.separateCover) separateCoverOffText else separateCoverOnText
+                scope.launch { snackbarHostState.showSnackbar(text) }
+                viewModel.readingSetting.toggleSeparateCover()
+            },
             removeGutter = readingPreferences.removeGutter,
             toggleRemoveGutter = {
                 val text =
@@ -275,7 +284,11 @@ fun ReaderSurface(
                 viewModel.readingSetting.toggleRemoveGutter()
             },
             fixedPageIndicator = readingPreferences.fixedPageIndicator,
-            toggleFixedPageIndicator = viewModel.readingSetting::toggleFixedPageIndicator
+            toggleFixedPageIndicator = {
+                val text = if (readingPreferences.fixedPageIndicator) fixedPageIndicatorOffText else fixedPageIndicatorOnText
+                scope.launch { snackbarHostState.showSnackbar(text) }
+                viewModel.readingSetting.toggleFixedPageIndicator()
+            }
         )
 
         if (showAddBookmarkDialog) {
@@ -440,7 +453,7 @@ private fun BookmarkAddDialog(
         properties = DialogProperties(
             dismissOnBackPress = true,
             dismissOnClickOutside = true,
-            usePlatformDefaultWidth = false
+            usePlatformDefaultWidth = true
         )
     ) {
         Surface(

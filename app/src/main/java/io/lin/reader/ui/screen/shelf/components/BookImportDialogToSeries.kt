@@ -45,7 +45,7 @@ fun BookImportDialogToSeries(
         properties = DialogProperties(
             dismissOnBackPress = true,
             dismissOnClickOutside = true,
-            usePlatformDefaultWidth = false // 关键：允许 Dialog 宽度自适应内容
+            usePlatformDefaultWidth = true
         )
     ) {
         Surface(
@@ -57,6 +57,7 @@ fun BookImportDialogToSeries(
             ),
             color = MaterialTheme.colorScheme.surface
         ) {
+            @Suppress("DEPRECATION")
             Column(
                 modifier = Modifier
                     .fillMaxWidth()

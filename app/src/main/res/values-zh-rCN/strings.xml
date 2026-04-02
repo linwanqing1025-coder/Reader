@@ -226,6 +226,10 @@
     <string name="reading_added_to_favourite">已添加至收藏</string>
     <string name="reading_rlt_mode_on">从右至左模式已开启</string>
     <string name="reading_rlt_mode_off">从右至左模式已关闭</string>
+    <string name="reading_separate_cover_on">分离封面已开启</string>
+    <string name="reading_separate_cover_off">分离封面已关闭</string>
     <string name="reading_remove_gutter_on">移除订口已开启</string>
     <string name="reading_remove_gutter_off">移除订口已关闭</string>
+    <string name="reading_fixed_page_indicator_on">已固定页码指示器</string>
+    <string name="reading_fixed_page_indicator_off">取消固定页码指示器</string>
 </resources>

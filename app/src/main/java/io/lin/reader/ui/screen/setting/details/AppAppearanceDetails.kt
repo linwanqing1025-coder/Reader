@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -68,7 +69,7 @@ import io.lin.reader.ui.theme.color.HoneyTheme
 import io.lin.reader.ui.theme.color.MapleTheme
 import io.lin.reader.ui.theme.color.MeadowTheme
 
-enum class ThemeColor(@StringRes val labelRes: Int) {
+enum class ThemeColor(@get:StringRes val labelRes: Int) {
     Dynamic(R.string.theme_color_dynamic),
     Default(R.string.theme_color_default),
     Maple(R.string.theme_color_maple),
@@ -77,7 +78,7 @@ enum class ThemeColor(@StringRes val labelRes: Int) {
     Honey(R.string.theme_color_honey)
 }
 
-enum class ThemeContrast(@StringRes val labelRes: Int) {
+enum class ThemeContrast(@get:StringRes val labelRes: Int) {
     Light(R.string.contrast_light),
     Medium(R.string.contrast_medium),
     High(R.string.contrast_high)
@@ -87,7 +88,7 @@ enum class DarkMode {
     System, Light, Dark
 }
 
-enum class AppLanguage(@StringRes val labelRes: Int) {
+enum class AppLanguage(@get:StringRes val labelRes: Int) {
     System(R.string.language_system),
     English(R.string.language_english),
     ChineseSimplified(R.string.language_chinese_simplified),
@@ -348,176 +349,146 @@ private fun ThemePreviewItem(
         DarkMode.Light -> false
         DarkMode.Dark -> true
     }
-    val scheme: ColorScheme = when {
-        // 动态颜色 (仅在 ThemeColor 为 Dynamic 且 Android 12+ 时启用)
-        themeColor == ThemeColor.Dynamic && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+    val context = LocalContext.current
+    
+    // 修正动态颜色判断逻辑
+    val scheme: ColorScheme = if (themeColor == ThemeColor.Dynamic && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+    } else {
+        val palette: AppThemePalette = when (themeColor) {
+            ThemeColor.Default, ThemeColor.Dynamic -> DefaultTheme
+            ThemeColor.Maple -> MapleTheme
+            ThemeColor.Meadow -> MeadowTheme
+            ThemeColor.Breeze -> BreezeTheme
+            ThemeColor.Honey -> HoneyTheme
         }
-        // 根据 ThemeColor 和 ThemeContrast 选择对应的 ColorScheme
-        else -> {
-            val palette: AppThemePalette = when (themeColor) {
-                ThemeColor.Default -> DefaultTheme
-                ThemeColor.Dynamic -> DefaultTheme
-
-                ThemeColor.Maple -> MapleTheme
-                ThemeColor.Meadow -> MeadowTheme
-                ThemeColor.Breeze -> BreezeTheme
-                ThemeColor.Honey -> HoneyTheme
-            } as AppThemePalette
-            if (darkTheme) {
-                when (themeContrast) {
-                    ThemeContrast.Light -> palette.darkScheme
-                    ThemeContrast.Medium -> palette.mediumContrastDarkColorScheme
-                    ThemeContrast.High -> palette.highContrastDarkColorScheme
-                }
-            } else {
-                when (themeContrast) {
-                    ThemeContrast.Light -> palette.lightScheme
-                    ThemeContrast.Medium -> palette.mediumContrastLightColorScheme
-                    ThemeContrast.High -> palette.highContrastLightColorScheme
-                }
+        if (darkTheme) {
+            when (themeContrast) {
+                ThemeContrast.Light -> palette.darkScheme
+                ThemeContrast.Medium -> palette.mediumContrastDarkColorScheme
+                ThemeContrast.High -> palette.highContrastDarkColorScheme
+            }
+        } else {
+            when (themeContrast) {
+                ThemeContrast.Light -> palette.lightScheme
+                ThemeContrast.Medium -> palette.mediumContrastLightColorScheme
+                ThemeContrast.High -> palette.highContrastLightColorScheme
             }
         }
     }
 
     Column(
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.width(104.dp)
     ) {
         Box(
             modifier = Modifier
-                .size(width = 100.dp, height = 160.dp)
+                .height(160.dp)
+                .fillMaxWidth()
                 .clip(RoundedCornerShape(16.dp))
                 .background(scheme.surface)
                 .clickable(onClick = onClick)
                 .border(
-                    width = if (isSelected) 3.dp else 1.dp,
-                    color = if (isSelected) scheme.primary else scheme.outlineVariant,
+                    width = if (isSelected) 2.dp else 1.dp,
+                    color = if (isSelected) scheme.primary else scheme.outlineVariant.copy(alpha = 0.5f),
                     shape = RoundedCornerShape(16.dp)
                 )
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(8.dp),
-                verticalArrangement = Arrangement.SpaceAround
-            ) {
-                // 主色联动预览 (Primary & OnPrimary) - 模拟 Header
-                Box(
+            Column(modifier = Modifier.fillMaxSize()) {
+                // 模拟 App Bar
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(40.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(scheme.primary)
-                        .padding(8.dp)
+                        .height(32.dp)
+                        .background(scheme.primaryContainer)
+                        .padding(horizontal = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(16.dp)
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(scheme.onPrimary)
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Box(modifier = Modifier.size(14.dp).clip(CircleShape).background(scheme.primary))
+                        Box(modifier = Modifier.width(36.dp).height(6.dp).clip(CircleShape).background(scheme.onPrimaryContainer.copy(alpha = 0.5f)))
+                    }
                 }
 
-                // 次要色联动预览 (Secondary & OnSecondary)
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                // 模拟主体内容
+                Column(
+                    modifier = Modifier.fillMaxSize().padding(10.dp),
+                    verticalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(32.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(scheme.secondary)
-                            .padding(6.dp)
+                    // 模拟书籍/卡片项
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
+                        Box(
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(scheme.secondary)
+                        )
+                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Box(modifier = Modifier.width(40.dp).height(6.dp).clip(CircleShape).background(scheme.onSurface))
+                            Box(modifier = Modifier.width(24.dp).height(4.dp).clip(CircleShape).background(scheme.onSurfaceVariant))
+                        }
+                    }
+
+                    // 模拟阅读状态 - 标签/分类
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        repeat(2) {
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(14.dp)
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .background(scheme.secondaryContainer)
+                            )
+                        }
+                    }
+
+                    // 模拟进度条
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Box(modifier = Modifier.width(30.dp).height(4.dp).clip(CircleShape).background(scheme.onSurfaceVariant.copy(alpha = 0.4f)))
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(6.dp)
+                                .clip(CircleShape)
+                                .background(scheme.outlineVariant.copy(alpha = 0.3f))
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth(0.6f)
+                                    .fillMaxHeight()
+                                    .clip(CircleShape)
+                                    .background(scheme.primary)
+                            )
+                        }
+                    }
+
+                    // 底部装饰
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .width(32.dp)
+                                .height(12.dp)
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(scheme.tertiaryContainer)
+                        )
                         Box(
                             modifier = Modifier
                                 .size(12.dp)
-                                .clip(RoundedCornerShape(3.dp))
-                                .background(scheme.onSecondary)
-                        )
-                    }
-
-                    // 辅助色 (Tertiary)
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(32.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(scheme.tertiary)
-                            .padding(6.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(12.dp)
-                                .clip(RoundedCornerShape(3.dp))
-                                .background(scheme.onTertiary)
-                        )
-                    }
-                }
-
-                // 容器颜色展示 (Container colors)
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(20.dp)
-                            .clip(RoundedCornerShape(6.dp))
-                            .background(scheme.primaryContainer)
-                    )
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(20.dp)
-                            .clip(RoundedCornerShape(6.dp))
-                            .background(scheme.secondaryContainer)
-                    )
-                }
-
-                // 界面内容模拟与错误色预览 (OnSurface / Error & OnError)
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.Bottom,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Column(
-                        modifier = Modifier.weight(1f).padding(horizontal = 4.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth(0.8f)
-                                .height(4.dp)
                                 .clip(CircleShape)
-                                .background(scheme.onSurface.copy(alpha = 0.15f))
-                        )
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth(0.5f)
-                                .height(4.dp)
-                                .clip(CircleShape)
-                                .background(scheme.onSurface.copy(alpha = 0.1f))
-                        )
-                    }
-
-                    // 错误色预览 (Error & OnError)
-                    Box(
-                        modifier = Modifier
-                            .size(width = 24.dp, height = 12.dp)
-                            .clip(RoundedCornerShape(50))
-                            .background(scheme.error)
-                            .padding(2.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clip(RoundedCornerShape(50))
-                                .background(scheme.onError)
+                                .background(scheme.error)
                         )
                     }
                 }
@@ -527,11 +498,16 @@ private fun ThemePreviewItem(
             if (isSelected) {
                 Box(
                     modifier = Modifier
+                        .fillMaxSize()
+                        .background(scheme.primary.copy(alpha = 0.08f))
+                )
+                Box(
+                    modifier = Modifier
                         .align(Alignment.TopEnd)
                         .padding(6.dp)
-                        .size(20.dp)
+                        .size(22.dp)
                         .background(scheme.primary, CircleShape)
-                        .border(2.dp, scheme.onPrimary, CircleShape),
+                        .border(2.dp, scheme.surface, CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -543,10 +519,13 @@ private fun ThemePreviewItem(
                 }
             }
         }
-        Spacer(modifier = Modifier.height(4.dp))
+        
+        Spacer(modifier = Modifier.height(8.dp))
+        
         Text(
             text = stringResource(themeColor.labelRes),
-            style = MaterialTheme.typography.labelMedium,
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
             color = if (isSelected) scheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
         )
     }

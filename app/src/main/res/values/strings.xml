@@ -229,6 +229,10 @@
     <string name="reading_added_to_favourite">Added to favourites</string>
     <string name="reading_rlt_mode_on">Right-to-left mode is on</string>
     <string name="reading_rlt_mode_off">Right-to-left mode is off</string>
+    <string name="reading_separate_cover_on">Separate cover is on</string>
+    <string name="reading_separate_cover_off">Separate cover is off</string>
     <string name="reading_remove_gutter_on">Remove gutter is on</string>
     <string name="reading_remove_gutter_off">Remove gutter is off</string>
+    <string name="reading_fixed_page_indicator_on">Fixed page indicator is on</string>
+    <string name="reading_fixed_page_indicator_off">Fixed page indicator is off</string>
 </resources>

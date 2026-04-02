@@ -123,7 +123,7 @@ class ReadingScreenViewModel(
         val startPage = if (jumpToPage != null && jumpToPage > 0) jumpToPage 
                         else if (volume.lastReadPage > 0) volume.lastReadPage 
                         else 1
-        updateLastReadPage(startPage)
+        updateLastRead(startPage)
     }
 
     private fun initializePdfRenderer(volume: Volume) {
@@ -163,17 +163,16 @@ class ReadingScreenViewModel(
      * 预加载页面
      * @param targetPages 目标页码列表 (0-based)
      * @param bitmapWidth 渲染宽度
+     * @param removeGutter 是否自动去除订口
      */
     fun prefetchPages(
         targetPages: List<Int>,
-        bitmapWidth: Int
+        bitmapWidth: Int,
+        removeGutter: Boolean
     ) {
         val renderer = _pdfRenderer.value ?: return
 
         // 如果宽度发生重大变化（比如从竖屏转横屏且布局导致宽度变化），可能需要重新渲染
-        // 但为了性能，这里我们判断只有在切换了书籍或者宽度未初始化时才允许改变 lastRenderedWidth
-        // 如果希望旋转后不重绘，这里就不应该清空缓存。
-        // PDF 渲染的 Bitmap 宽度如果与显示宽度不符，Compose 会进行缩放，通常是可以接受的。
         if (lastRenderedWidth == -1) {
             lastRenderedWidth = bitmapWidth
         }
@@ -190,7 +189,7 @@ class ReadingScreenViewModel(
             targetPages.forEach { pageIndex ->
                 if (!cachedBitmaps.containsKey(pageIndex)) {
                     val bitmap =
-                        renderPdfPage(renderer, pageIndex, lastRenderedWidth, rendererMutex)
+                        renderPdfPage(renderer, pageIndex, lastRenderedWidth, rendererMutex, removeGutter)
                     if (bitmap != null) {
                         withContext(Dispatchers.Main) {
                             cachedBitmaps[pageIndex] = bitmap
@@ -325,22 +324,13 @@ class ReadingScreenViewModel(
         }
     }
 
-    fun updateLastReadPage(page: Int) {
+    fun updateLastRead(page: Int) {
         val currentVolume = _uiState.value.volume ?: return
         viewModelScope.launch {
             val updatedVolume = currentVolume.copy(
                 lastReadPage = page,
                 lastReadTime = System.currentTimeMillis()
             )
-            booksRepository.updateVolume(updatedVolume)
-            _uiState.update { it.copy(volume = updatedVolume) }
-        }
-    }
-
-    fun updateReadTime() {
-        val currentVolume = _uiState.value.volume ?: return
-        viewModelScope.launch {
-            val updatedVolume = currentVolume.copy(lastReadTime = System.currentTimeMillis())
             booksRepository.updateVolume(updatedVolume)
             _uiState.update { it.copy(volume = updatedVolume) }
         }
@@ -371,6 +361,8 @@ class ReadingScreenViewModel(
             viewModelScope.launch {
                 val current = state.value.removeGutter
                 userPreferencesRepository.updateRemoveGutter(!current)
+                // 清理缓存以重新渲染
+                cachedBitmaps.clear()
             }
         }
 
