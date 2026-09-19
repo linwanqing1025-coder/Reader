@@ -1,0 +1,5 @@
+- `[x]` Refactor `BookReader.kt` to use 0-based index for `currentPageNumber`
+- `[x]` Update `ReadingModeContainer` call with correct `initialPageIndex`
+- `[x]` Adjust page number display in `BookmarkAddDialog` (+1)
+- `[x]` Adjust page number display in delete bookmark notification (+1)
+- `[x]` Verify with static analysis

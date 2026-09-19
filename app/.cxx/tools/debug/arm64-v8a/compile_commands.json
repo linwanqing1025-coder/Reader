@@ -1,0 +1,7 @@
+[
+{
+  "directory": "D:/Luo/Developer/Android/MyProject/Reader/app/.cxx/Debug/1a4c662r/arm64-v8a",
+  "command": "D:\\Luo\\Developer\\AndroidSDK\\ndk\\28.2.13676358\\toolchains\\llvm\\prebuilt\\windows-x86_64\\bin\\clang++.exe --target=aarch64-none-linux-android31 --sysroot=D:/Luo/Developer/AndroidSDK/ndk/28.2.13676358/toolchains/llvm/prebuilt/windows-x86_64/sysroot -Dreader_opencv_EXPORTS -isystem D:/Luo/Developer/JDK/caches/9.7.0/transforms/7ec220c9e420fc5271ef60e6d124b341/transformed/opencv-5.0.0.1/prefab/modules/opencv_java5/include -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security   -fno-limit-debug-info  -fPIC -O3 -std=gnu++17 -o CMakeFiles\\reader_opencv.dir\\reader_jni.cpp.o -c D:\\Luo\\Developer\\Android\\MyProject\\Reader\\app\\src\\main\\cpp\\reader_jni.cpp",
+  "file": "D:\\Luo\\Developer\\Android\\MyProject\\Reader\\app\\src\\main\\cpp\\reader_jni.cpp"
+}
+]

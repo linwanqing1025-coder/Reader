@@ -9,7 +9,7 @@ import androidx.room.RoomDatabase
  * 数据库主类，定义了数据库的结构和版本。
  */
 @Database(
-    entities = [Series::class, Volume::class, Bookmark::class], // 添加了 Bookmark 实体
+    entities = [Series::class, Volume::class, Bookmark::class, PageSetting::class],
     version = 1,
     exportSchema = false
 )
@@ -18,7 +18,8 @@ abstract class ReaderDatabase : RoomDatabase() {
     // 提供 DAO 接口的访问方法
     abstract fun seriesDao(): SeriesDao
     abstract fun volumeDao(): VolumeDao
-    abstract fun bookmarkDao(): BookmarkDao // 添加了 BookmarkDao
+    abstract fun bookmarkDao(): BookmarkDao
+    abstract fun pageSettingDao(): PageSettingDao
 
     /**
      * 单例模式，确保整个应用中只有一个数据库实例。

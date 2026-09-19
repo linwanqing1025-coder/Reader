@@ -1,0 +1,1 @@
+D:\Luo\Developer\Android\MyProject\Reader\app\build\intermediates\cxx\RelWithDebInfo\b5f1s1f2\obj\arm64-v8a

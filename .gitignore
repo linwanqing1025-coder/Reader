@@ -34,3 +34,6 @@ proguard-project.txt
 # Android Studio/IDEA
 *.iml
 .idea
+
+# MuPDF reference source
+/docs/mupdf-android-viewer/

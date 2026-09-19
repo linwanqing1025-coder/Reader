@@ -1,5 +1,7 @@
 package io.lin.reader.ui.components.cover
 
+import android.content.Context
+import android.graphics.BitmapFactory
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,6 +20,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,27 +32,58 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import io.lin.reader.R
+import io.lin.reader.data.database.Volume
+import io.lin.reader.ui.LocalAppViewModel
+import io.lin.reader.utils.MuPDFUtils
 
 /**
  * 单本书的封面组件（根据 MD3 重塑）
- * 具有智能比例显示逻辑
+ * 具有智能比例显示逻辑和自发渲染功能
  */
-@Preview
 @Composable
 fun VolumeCover(
+    volume: Volume,
     modifier: Modifier = Modifier,
     width: Dp = 100.dp,
-    height: Dp = 140.dp,
-    coverUri: String? = null,
+    height: Dp = 140.dp
 ) {
-    // 状态记录图片的实际比例，初始默认为 0
-    var imageAspectRatio by remember { mutableStateOf(0f) }
+    val context = LocalContext.current
+    val appViewModel = LocalAppViewModel.current // 获取全局 ViewModel 以操作数据库
+
+    // 使用 volume.coverUri 作为初始状态，并允许内部更新
+    var currentCoverUri by remember(volume.coverUri) { mutableStateOf(volume.coverUri) }
+
+    // 自发渲染：如果 coverUri 为空，则异步生成并持久化
+    if (currentCoverUri.isNullOrBlank()) {
+        LaunchedEffect(volume.id) {
+            val generatedUri = MuPDFUtils.getCover(context, volume.bookFileUri.toUri())
+            if (generatedUri != null) {
+                currentCoverUri = generatedUri
+                // 通过全局 AppViewModel 更新数据库
+                appViewModel.saveCoverMapping(volume.bookFileUri, generatedUri)
+            }
+        }
+    }
+
+    // 核心解决方案：在图片渲染前，通过读取文件 Header 预先同步解析宽高比（耗时 < 1ms，不占用内存）
+    val imageAspectRatio = remember(currentCoverUri) {
+        calculateImageAspectRatio(context, currentCoverUri)
+    }
+
+    // 在 AsyncImage 首帧渲染前直接确定 ContentScale，避免首次渲染时误用默认的 Fit
+    val contentScale = remember(imageAspectRatio) {
+        if (imageAspectRatio != null && imageAspectRatio in 1f..2f) {
+            ContentScale.FillBounds
+        } else {
+            ContentScale.Fit
+        }
+    }
 
     ElevatedCard(
         modifier = modifier.size(width, height),
@@ -63,29 +97,21 @@ fun VolumeCover(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            if (!coverUri.isNullOrBlank()) {
+            if (!currentCoverUri.isNullOrBlank()) {
                 AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(coverUri)
+                    model = ImageRequest.Builder(context)
+                        .data(currentCoverUri)
                         .crossfade(true)
                         .build(),
                     contentDescription = "Book Cover",
-                    onSuccess = { state ->
-                        // 动态获取图片的实际比例 (Height / Width)，
-                        // 注意：这里为了方便判断 [1f, 2f]，取 高/宽 比
-                        val intrinsicSize = state.painter.intrinsicSize
-                        if (intrinsicSize.width > 0 && intrinsicSize.height > 0) {
-                            imageAspectRatio = intrinsicSize.height / intrinsicSize.width
+                    onError = {
+                        val brokenUri = currentCoverUri
+                        if (!brokenUri.isNullOrBlank()) {
+                            currentCoverUri = null
+                            appViewModel.handleCoverError(volume.bookFileUri, brokenUri)
                         }
                     },
-                    // 智能显示策略：
-                    // 若高/宽比例在 [1.0, 2.0] 内（常见的书本比例），拉伸填满
-                    // 否则（如超长或超扁）采用适应显示
-                    contentScale = if (imageAspectRatio in 1f..2f) {
-                        ContentScale.FillBounds
-                    } else {
-                        ContentScale.Fit
-                    },
+                    contentScale = contentScale,
                     modifier = Modifier
                         .fillMaxSize()
                         .background(Color.White)
@@ -113,5 +139,29 @@ fun VolumeCover(
                 }
             }
         }
+    }
+}
+
+/**
+ * 快速解析图片的宽高比
+ * 利用 inJustDecodeBounds = true 仅读取文件头元数据，不加载全图 Bitmap，几乎瞬间完成
+ */
+private fun calculateImageAspectRatio(context: Context, uriString: String?): Float? {
+    if (uriString.isNullOrBlank()) return null
+    return try {
+        val uri = uriString.toUri()
+        val options = BitmapFactory.Options().apply {
+            inJustDecodeBounds = true
+        }
+        context.contentResolver.openInputStream(uri)?.use { inputStream ->
+            BitmapFactory.decodeStream(inputStream, null, options)
+        }
+        if (options.outWidth > 0 && options.outHeight > 0) {
+            options.outHeight.toFloat() / options.outWidth.toFloat()
+        } else {
+            null
+        }
+    } catch (e: Exception) {
+        null
     }
 }

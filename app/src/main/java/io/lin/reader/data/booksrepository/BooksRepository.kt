@@ -2,13 +2,14 @@ package io.lin.reader.data.booksrepository
 
 import androidx.paging.PagingData
 import io.lin.reader.data.database.Bookmark
+import io.lin.reader.data.database.PageSetting
 import io.lin.reader.data.database.Series
 import io.lin.reader.data.database.Volume
 import io.lin.reader.data.database.VolumeWithBookmarks
 import io.lin.reader.data.database.VolumeWithSeries
-import io.lin.reader.ui.screen.setting.details.BookmarkSortMethod
-import io.lin.reader.ui.screen.setting.details.SeriesSortMethod
-import io.lin.reader.ui.screen.setting.details.VolumeSortMethod
+import io.lin.reader.data.preferences.BookmarkSortMethod
+import io.lin.reader.data.preferences.SeriesSortMethod
+import io.lin.reader.data.preferences.VolumeSortMethod
 import kotlinx.coroutines.flow.Flow
 
 
@@ -40,6 +41,8 @@ interface BooksRepository {
     suspend fun insertBookmark(bookmark: Bookmark): Long
     suspend fun insertBookmarks(bookmarks: List<Bookmark>)
 
+    suspend fun upsertPageSetting(pageSetting: PageSetting)
+
     //删
     /**
      * 删除一本指定的书籍，并将其所属系列的册数减一。
@@ -63,6 +66,8 @@ interface BooksRepository {
 
     suspend fun deleteBookmark(bookmark: Bookmark)
     suspend fun clearAllBookmarks(): Int
+
+    suspend fun clearPageSettingsByVolumeId(volumeId: Long)
 
     //改
     /**
@@ -149,6 +154,8 @@ interface BooksRepository {
     fun getVolumesWithBookmarksStream(order: BookmarkSortMethod): Flow<List<VolumeWithBookmarks>>
 
     fun getBookmarksByVolumeId(volumeId: Long): Flow<List<Bookmark>>
+
+    fun getPageSettingsByVolumeId(volumeId: Long): Flow<List<PageSetting>>
 
     /**
      * 获取所有收藏的书籍，并按系列分组。

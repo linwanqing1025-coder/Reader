@@ -34,7 +34,8 @@ class AppDataContainer(private val context: Context) : AppContainer {
         OfflineBooksRepository(
             database.seriesDao(),
             database.volumeDao(),
-            database.bookmarkDao()
+            database.bookmarkDao(),
+            database.pageSettingDao()
         )
     }
 

@@ -19,3 +19,24 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# MuPDF (Fitz)
+-keep class com.artifex.mupdf.fitz.** {
+    <fields>;
+    <methods>;
+}
+
+# MuPDFCoreExtended
+-keepclassmembers class com.artifex.mupdf.viewer.MuPDFCore {
+    private int resolution;
+    private com.artifex.mupdf.fitz.Document doc;
+    private com.artifex.mupdf.fitz.Page page;
+    private com.artifex.mupdf.fitz.DisplayList displayList;
+
+    private void gotoPage(int);
+}
+
+# General JNI Keep
+-keepclasseswithmembernames class * {
+    native <methods>;
+}

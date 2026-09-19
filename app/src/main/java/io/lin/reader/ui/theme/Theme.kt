@@ -14,9 +14,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
-import io.lin.reader.ui.screen.setting.details.DarkMode
-import io.lin.reader.ui.screen.setting.details.ThemeColor
-import io.lin.reader.ui.screen.setting.details.ThemeContrast
+import io.lin.reader.data.preferences.DarkMode
+import io.lin.reader.data.preferences.ThemeColor
+import io.lin.reader.data.preferences.ThemeContrast
 import io.lin.reader.ui.theme.color.BreezeTheme
 import io.lin.reader.ui.theme.color.DefaultTheme
 import io.lin.reader.ui.theme.color.HoneyTheme
@@ -54,30 +54,31 @@ fun ReaderTheme(
     }
 
     val context = LocalContext.current
-    val colorScheme: ColorScheme = if (themeColor == ThemeColor.Dynamic && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-    } else {
-        val palette: AppThemePalette = when (themeColor) {
-            ThemeColor.Default, ThemeColor.Dynamic -> DefaultTheme
-            ThemeColor.Maple -> MapleTheme
-            ThemeColor.Meadow -> MeadowTheme
-            ThemeColor.Breeze -> BreezeTheme
-            ThemeColor.Honey -> HoneyTheme
-        }
-        if (darkTheme) {
-            when (themeContrast) {
-                ThemeContrast.Light -> palette.darkScheme
-                ThemeContrast.Medium -> palette.mediumContrastDarkColorScheme
-                ThemeContrast.High -> palette.highContrastDarkColorScheme
-            }
+    val colorScheme: ColorScheme =
+        if (themeColor == ThemeColor.Dynamic && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         } else {
-            when (themeContrast) {
-                ThemeContrast.Light -> palette.lightScheme
-                ThemeContrast.Medium -> palette.mediumContrastLightColorScheme
-                ThemeContrast.High -> palette.highContrastLightColorScheme
+            val palette: AppThemePalette = when (themeColor) {
+                ThemeColor.Default, ThemeColor.Dynamic -> DefaultTheme
+                ThemeColor.Maple -> MapleTheme
+                ThemeColor.Meadow -> MeadowTheme
+                ThemeColor.Breeze -> BreezeTheme
+                ThemeColor.Honey -> HoneyTheme
+            }
+            if (darkTheme) {
+                when (themeContrast) {
+                    ThemeContrast.Light -> palette.darkScheme
+                    ThemeContrast.Medium -> palette.mediumContrastDarkColorScheme
+                    ThemeContrast.High -> palette.highContrastDarkColorScheme
+                }
+            } else {
+                when (themeContrast) {
+                    ThemeContrast.Light -> palette.lightScheme
+                    ThemeContrast.Medium -> palette.mediumContrastLightColorScheme
+                    ThemeContrast.High -> palette.highContrastLightColorScheme
+                }
             }
         }
-    }
 
     // 设置状态栏和导航栏颜色
     val view = LocalView.current

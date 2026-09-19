@@ -1,0 +1,3 @@
+D:/Luo/Developer/Android/MyProject/Reader/app/.cxx/Debug/1a4c662r/x86_64/CMakeFiles/reader_opencv.dir
+D:/Luo/Developer/Android/MyProject/Reader/app/.cxx/Debug/1a4c662r/x86_64/CMakeFiles/edit_cache.dir
+D:/Luo/Developer/Android/MyProject/Reader/app/.cxx/Debug/1a4c662r/x86_64/CMakeFiles/rebuild_cache.dir

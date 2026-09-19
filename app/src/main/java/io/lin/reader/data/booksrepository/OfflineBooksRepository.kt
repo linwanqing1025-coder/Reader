@@ -8,15 +8,17 @@ import androidx.paging.PagingData
 import androidx.room.Transaction
 import io.lin.reader.data.database.Bookmark
 import io.lin.reader.data.database.BookmarkDao
+import io.lin.reader.data.database.PageSetting
+import io.lin.reader.data.database.PageSettingDao
 import io.lin.reader.data.database.Series
 import io.lin.reader.data.database.SeriesDao
 import io.lin.reader.data.database.Volume
 import io.lin.reader.data.database.VolumeDao
 import io.lin.reader.data.database.VolumeWithBookmarks
 import io.lin.reader.data.database.VolumeWithSeries
-import io.lin.reader.ui.screen.setting.details.BookmarkSortMethod
-import io.lin.reader.ui.screen.setting.details.SeriesSortMethod
-import io.lin.reader.ui.screen.setting.details.VolumeSortMethod
+import io.lin.reader.data.preferences.BookmarkSortMethod
+import io.lin.reader.data.preferences.SeriesSortMethod
+import io.lin.reader.data.preferences.VolumeSortMethod
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.util.TreeMap
@@ -27,7 +29,8 @@ import java.util.TreeMap
 class OfflineBooksRepository(
     private val seriesDao: SeriesDao,
     private val volumeDao: VolumeDao,
-    private val bookmarkDao: BookmarkDao
+    private val bookmarkDao: BookmarkDao,
+    private val pageSettingDao: PageSettingDao
 ) : BooksRepository {
     val tag = "OfflineBooksRepository"
 
@@ -210,6 +213,10 @@ class OfflineBooksRepository(
         bookmarkDao.insertBookmarks(bookmarks)
     }
 
+    override suspend fun upsertPageSetting(pageSetting: PageSetting) {
+        pageSettingDao.upsertPageSetting(pageSetting)
+    }
+
     //删
     /**
      * 删除一本指定的书籍，并将其所属系列的册数减一。
@@ -260,6 +267,10 @@ class OfflineBooksRepository(
 
     override suspend fun clearAllBookmarks(): Int {
         return bookmarkDao.clearAllBookmarks()
+    }
+
+    override suspend fun clearPageSettingsByVolumeId(volumeId: Long) {
+        pageSettingDao.clearPageSettingsByVolumeId(volumeId)
     }
 
 
@@ -521,6 +532,10 @@ class OfflineBooksRepository(
         return bookmarkDao.getBookmarksByVolumeId(volumeId)
     }
 
+    override fun getPageSettingsByVolumeId(volumeId: Long): Flow<List<PageSetting>> {
+        return pageSettingDao.getPageSettingsByVolumeId(volumeId)
+    }
+
     override fun getFavoriteVolumesGroupedBySeriesStream(
         order: SeriesSortMethod,
         isAscending: Boolean
@@ -564,5 +579,4 @@ class OfflineBooksRepository(
     override suspend fun clearAllFavorites(): Int {
         return volumeDao.clearAllFavorites()
     }
-
 }

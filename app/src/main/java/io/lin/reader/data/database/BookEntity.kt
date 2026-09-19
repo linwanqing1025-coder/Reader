@@ -7,20 +7,39 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.Relation
 
-// 书籍系列表
+/** 
+ * 书籍系列表 
+ * @property id 主键（自增）
+ * @property createTime 创建时间（用于排序）
+ * @property seriesName 系列名（如《哈利波特》）
+ * @property volumeCount 该系列的册数
+ */
 @Entity(
     tableName = "series",
     indices = [Index(value = ["seriesName"], unique = true)]
 )
 data class Series(
-    @PrimaryKey(autoGenerate = true) // 主键自增
+    @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
-    val createTime: Long? = null, // 创建时间（用于排序）
-    val seriesName: String = "Default Series Name", // 系列名（如“哈利波特”）
-    val volumeCount: Int = 1 // 该系列的册数
+    val createTime: Long? = null,
+    val seriesName: String = "Default Series Name",
+    val volumeCount: Int = 1
 )
 
-// 单册书表，外键关联Series表
+/** 
+ * 单册书表，外键关联Series表
+ * @property id 主键（自增）
+ * @property volumeName 书名（如《哈利波特与死亡圣器》）
+ * @property mimeType 记录文件类型，默认 "application/pdf"
+ * @property bookFileUri 书本体文件 URI(Uri.toString())
+ * @property coverUri 书封面 URI(Uri.toString())
+ * @property totalPages 总页数
+ * @property createTime 创建时间（用于排序）
+ * @property lastReadPage 上次阅读页索引（0-based），-1 代表未读
+ * @property lastReadTime 上次阅读时间， null 表示未读
+ * @property isFavorite 收藏功能：默认为 false
+ * @property seriesId 外键：关联对应的书籍系列 ID
+ */
 @Entity(
     tableName = "volumes",
     foreignKeys = [ForeignKey(
@@ -37,20 +56,28 @@ data class Series(
     ]
 )
 data class Volume(
-    @PrimaryKey(autoGenerate = true) // 主键自增
+    @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
-    val createTime: Long? = null, // 创建时间（用于排序）
-    val volumeName: String = "Default Volume Name", // 书名（如“哈利波特与死亡圣器”）
-    val bookFileUri: String, // 书本体文件URI（存储Uri.toString()）
-    val coverUri: String? = null, // 书封面URI（存储Uri.toString()）
-    val totalPages: Int = 0, // 总页数
-    val lastReadPage: Int = 0, // 上次阅读页数（暂不实现，默认0）
-    val lastReadTime: Long? = null, // 上次阅读时间（初始化时为null）
-    val seriesId: Long, // 外键：关联对应的书籍系列ID
-    val isFavorite: Boolean = false // 收藏功能：默认为 false
+    val volumeName: String = "Default Volume Name",
+    val mimeType: String = "application/pdf",
+    val bookFileUri: String,
+    val coverUri: String? = null,
+    val totalPages: Int = 0,
+    val createTime: Long? = null,
+    val lastReadPage: Int = -1,
+    val lastReadTime: Long? = null,
+    val isFavorite: Boolean = false,
+    val seriesId: Long
 )
 
-// 书签表，外键关联Volumes表
+/** 
+ * 书签表，外键关联 Volumes 表 
+ * @property id 主键（自增）
+ * @property volumeId 外键：关联所属的书籍ID
+ * @property label 书签名称
+ * @property pageNumber 记录的页数
+ * @property addTime 添加书签的时间戳
+ */
 @Entity(
     tableName = "bookmarks",
     foreignKeys = [ForeignKey(
@@ -64,15 +91,40 @@ data class Volume(
 data class Bookmark(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
-    val volumeId: Long, // 外键：关联所属的书籍ID
-    val label: String, // 书签名称
-    val pageNumber: Int, // 记录的页数
-    val addTime: Long // 添加书签的时间戳
+    val volumeId: Long,
+    val label: String,
+    val pageNumber: Int,
+    val addTime: Long
+)
+
+/** 
+ * 页面设置表，用于存储特定页面的旋转等信息 
+ * @property volumeId 所属书籍 ID
+ * @property pageIndex 页面索引
+ * @property rotation 旋转角度：0, 90, 180, 270
+ */
+@Entity(
+    tableName = "page_settings",
+    primaryKeys = ["volumeId", "pageIndex"],
+    foreignKeys = [ForeignKey(
+        entity = Volume::class,
+        parentColumns = ["id"],
+        childColumns = ["volumeId"],
+        onDelete = ForeignKey.CASCADE
+    )],
+    indices = [Index(value = ["volumeId"])]
+)
+data class PageSetting(
+    val volumeId: Long,
+    val pageIndex: Int,
+    val rotation: Int = 0
 )
 
 /**
  * 一个用于封装查询结果的自定义数据类，它包含了完整的 Volume 信息以及其所属系列。
  * 这不是一个数据库实体。
+ * @property volume 书籍信息
+ * @property series 所属系列信息
  */
 data class VolumeWithSeries(
     @Embedded
@@ -86,6 +138,8 @@ data class VolumeWithSeries(
 
 /**
  * 封装书籍及其所有书签的自定义数据类（一对多关系）。
+ * @property volume 书籍信息
+ * @property bookmarks 书籍关联的所有书签列表
  */
 data class VolumeWithBookmarks(
     @Embedded

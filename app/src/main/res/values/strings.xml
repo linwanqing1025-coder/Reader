@@ -109,6 +109,7 @@
     <string name="setting_reader_color">Reader color</string>
     <string name="setting_reading_mode">Reading mode</string>
     <string name="setting_interaction_style">Interaction style</string>
+    <string name="setting_reflow">Reflow</string>
     <string name="setting_other_reading_settings">Other reading settings</string>
 
     <string name="setting_reset_all">Reset all setting</string>
@@ -153,11 +154,11 @@
     <string name="series_sort_create_time">Create Time</string>
     <string name="volume_sort_name">Name</string>
     <string name="volume_sort_create_time">Create Time</string>
-    <string name="volume_sort_last_read_time">Last Read Time</string>
+    <string name="volume_sort_last_read_time">Last Read</string>
     <string name="bookmark_sort_volume_name">Volume Name</string>
-    <string name="bookmark_sort_volume_create_time">Volume Create Time</string>
-    <string name="bookmark_sort_last_read_time">Last Read Time</string>
-    <string name="bookmark_sort_latest_bookmark_time">Latest Bookmark Time</string>
+    <string name="bookmark_sort_volume_create_time">Volume Create</string>
+    <string name="bookmark_sort_last_read_time">Last Read</string>
+    <string name="bookmark_sort_latest_bookmark_time">Latest Bookmark</string>
 
     <string name="sort_by">Sort by</string>
     <string name="sort_order">Order</string>
@@ -200,6 +201,16 @@
     <string name="interaction_style_L">L-Shape</string>
     <string name="interaction_style_Mixed">Mixed</string>
 
+    <!-- Reflow Details -->
+    <string name="reflow_label_main">Reflow</string>
+    <string name="reflow_enable_switch">Reflowed</string>
+    <string name="reflow_label_typography">Typography</string>
+    <string name="reflow_font_size">Font size</string>
+    <string name="reflow_text_align_justify">文本两端对齐</string>
+    <string name="reflow_label_spacing">间距设置</string>
+    <string name="reflow_margin">外边距 (Margin)</string>
+    <string name="reflow_padding">内边距 (Padding)</string>
+
     <!-- Other Reading Setting Details -->
     <string name="other_reading_settings_label">Other Reading Settings</string>
     <string name="other_reading_settings_rtl">Right-to-left mode</string>
@@ -235,4 +246,7 @@
     <string name="reading_remove_gutter_off">Remove gutter is off</string>
     <string name="reading_fixed_page_indicator_on">Fixed page indicator is on</string>
     <string name="reading_fixed_page_indicator_off">Fixed page indicator is off</string>
+
+    <string name="reading_document_directory_title">Outline</string>
+    <string name="reading_document_directory_no_outline">No outline found in this document</string>
 </resources>

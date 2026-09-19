@@ -58,9 +58,7 @@ interface SeriesDao {
     @Update
     suspend fun updateSeries(series: Series)
 
-    /**
-     * 4. 查
-     */
+    //4. 查
     /**
      * 根据Id获取书的系列，返回一个Series，用于与其他函数互操作。
      * */
@@ -367,4 +365,19 @@ interface BookmarkDao {
 
     @Query("DELETE FROM bookmarks")
     suspend fun clearAllBookmarks(): Int
+}
+
+@Dao
+interface PageSettingDao {
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertPageSetting(pageSetting: PageSetting)
+
+    @Query("SELECT * FROM page_settings WHERE volumeId = :volumeId")
+    fun getPageSettingsByVolumeId(volumeId: Long): Flow<List<PageSetting>>
+
+    @Query("SELECT * FROM page_settings WHERE volumeId = :volumeId AND pageIndex = :pageIndex")
+    suspend fun getPageSetting(volumeId: Long, pageIndex: Int): PageSetting?
+
+    @Query("DELETE FROM page_settings WHERE volumeId = :volumeId")
+    suspend fun clearPageSettingsByVolumeId(volumeId: Long)
 }

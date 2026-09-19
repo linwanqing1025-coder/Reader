@@ -61,7 +61,7 @@ fun rememberLazyFileSelector(): FileSelectorLauncher {
                 selectedUris.add(uri)
             }
 
-            // 关键步骤：为获取到的URI申请持久化读取权限
+            // 为获取到的 URI 申请持久化读取权限
             if (selectedUris.isNotEmpty()) {
                 Log.d(TAG, "Requesting persistent permissions for ${selectedUris.size} URIs.")
                 selectedUris.forEach { uri ->
@@ -75,30 +75,11 @@ fun rememberLazyFileSelector(): FileSelectorLauncher {
                 }
             }
 
-            // --- DIAGNOSTIC: Printing all persisted URI permissions ---
-            val allPersistedUris = context.contentResolver.persistedUriPermissions
-            if (allPersistedUris.isEmpty()) {
-                Log.w(TAG, "DIAGNOSTIC: App holds NO persisted URI permissions at this moment.")
-            } else {
-                Log.i(
-                    TAG,
-                    "--- DIAGNOSTIC: Listing all ${allPersistedUris.size} persisted URI permissions held by the app ---"
-                )
-                allPersistedUris.forEachIndexed { index, uriPermission ->
-                    Log.i(
-                        TAG,
-                        "  ${index + 1}: ${uriPermission.uri} (isRead: ${uriPermission.isReadPermission}, isWrite: ${uriPermission.isWritePermission})"
-                    )
-                }
-                Log.i(TAG, "--- End of diagnostic list ---")
-            }
-            // --- END DIAGNOSTIC ---
-
             val uriStrings = selectedUris.map { it.toString() }
             Log.d(TAG, "选择了 ${uriStrings.size} 个文件")
-            // 回调返回Uri列表
+            
+            // 回调返回 Uri 列表
             currentOnFileSelected.value?.invoke(uriStrings)
-
         } else {
             Log.d(TAG, "未选择任何文件，返回空列表")
             // 用户取消选择时，也回调一个空列表
@@ -109,7 +90,7 @@ fun rememberLazyFileSelector(): FileSelectorLauncher {
         currentOnFileSelected.value = null
     }
 
-    // 2. 创建生命周期观察者（监听DESTROYED事件）
+    // 创建生命周期观察者（监听 DESTROYED 事件）
     val lifecycleObserver = remember {
         LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_DESTROY) {
@@ -121,17 +102,17 @@ fun rememberLazyFileSelector(): FileSelectorLauncher {
         }
     }
 
-    // 3. 绑定生命周期监听（DisposableEffect确保重组/销毁时清理）
+    // 绑定生命周期监听（ DisposableEffect 确保重组/销毁时清理）
     DisposableEffect(lifecycleOwner) {
         lifecycleOwner.lifecycle.addObserver(lifecycleObserver)
-        // Composable销毁时：移除观察者（避免内存泄漏）
+        // Composable 销毁时：移除观察者（避免内存泄漏）
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(lifecycleObserver)
             Log.d(TAG, "=== DisposableEffect：移除文件选择器生命周期观察者 ===")
         }
     }
 
-    // 4. 构建启动函数，实现"懒使用" ：首次使用时初始化，APP结束时才摧毁
+    // 构建启动函数，首次使用时初始化，APP 结束时才摧毁
     return remember {
         { fileType, onFileSelected ->
             // 首次使用时打印日志（用户真正关心的"首次触发"时机）
@@ -149,7 +130,18 @@ fun rememberLazyFileSelector(): FileSelectorLauncher {
             // 唤起文件选择器（仅在用户点击时执行）
             val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
                 addCategory(Intent.CATEGORY_OPENABLE)
-                type = currentFileType.value
+                type = "*/*"
+                putExtra(Intent.EXTRA_MIME_TYPES, arrayOf(
+                    "application/pdf",
+                    "application/vnd.ms-xpsdocument",
+                    "application/oxps",
+                    "application/x-cbz",
+                    "application/vnd.comicbook+zip",
+                    "application/epub+zip",
+                    "application/x-fictionbook",
+                    "application/x-mobipocket-ebook",
+                    "application/octet-stream"
+                ))
                 putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
                 // 正确的授权是通过在回调中调用 takePersistableUriPermission() 完成的。
                 // 此处只需申请临时的读取权限。

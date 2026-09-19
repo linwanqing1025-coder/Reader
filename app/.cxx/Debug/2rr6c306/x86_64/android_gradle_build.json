@@ -1,0 +1,40 @@
+{
+  "buildFiles": [
+    "D:\\Luo\\Developer\\Android\\MyProject\\Reader\\app\\src\\main\\cpp\\CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "D:\\Luo\\Developer\\AndroidSDK\\cmake\\3.22.1\\bin\\ninja.exe",
+      "-C",
+      "D:\\Luo\\Developer\\Android\\MyProject\\Reader\\app\\.cxx\\Debug\\2rr6c306\\x86_64",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "D:\\Luo\\Developer\\AndroidSDK\\cmake\\3.22.1\\bin\\ninja.exe",
+    "-C",
+    "D:\\Luo\\Developer\\Android\\MyProject\\Reader\\app\\.cxx\\Debug\\2rr6c306\\x86_64",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {
+    "reader_opencv::@6890427a1f51a3e7e1df": {
+      "toolchain": "toolchain",
+      "abi": "x86_64",
+      "artifactName": "reader_opencv",
+      "output": "D:\\Luo\\Developer\\Android\\MyProject\\Reader\\app\\build\\intermediates\\cxx\\Debug\\2rr6c306\\obj\\x86_64\\libreader_opencv.so",
+      "runtimeFiles": [
+        "D:\\Luo\\Developer\\JDK\\caches\\8.13\\transforms\\d7402da05451affc6a5651be0acde313\\transformed\\opencv-5.0.0.1\\prefab\\modules\\opencv_java5\\libs\\android.x86_64\\libopencv_java5.so"
+      ]
+    }
+  },
+  "toolchains": {
+    "toolchain": {
+      "cCompilerExecutable": "D:\\Luo\\Developer\\AndroidSDK\\ndk\\27.0.12077973\\toolchains\\llvm\\prebuilt\\windows-x86_64\\bin\\clang.exe",
+      "cppCompilerExecutable": "D:\\Luo\\Developer\\AndroidSDK\\ndk\\27.0.12077973\\toolchains\\llvm\\prebuilt\\windows-x86_64\\bin\\clang++.exe"
+    }
+  },
+  "cFileExtensions": [],
+  "cppFileExtensions": [
+    "cpp"
+  ]
+}

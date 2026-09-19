@@ -1,0 +1,8 @@
+# ninja log v5
+0	15	0	clean	e2748a664891493
+41	6092	8112333354216343	CMakeFiles/reader_opencv.dir/reader_jni.cpp.o	b6b77df89c3b118
+6096	6866	8112333361397852	D:/Luo/Developer/Android/MyProject/Reader/app/build/intermediates/cxx/Debug/1a4c662r/obj/arm64-v8a/libreader_opencv.so	ad614307baea67aa
+0	12	0	clean	e2748a664891493
+1	34	0	clean	e2748a664891493
+48	9873	8113512999736818	CMakeFiles/reader_opencv.dir/reader_jni.cpp.o	b78aa16c66509320
+9875	10650	8113513007591916	D:/Luo/Developer/Android/MyProject/Reader/app/build/intermediates/cxx/Debug/1a4c662r/obj/arm64-v8a/libreader_opencv.so	99186b9fbf51d3d4

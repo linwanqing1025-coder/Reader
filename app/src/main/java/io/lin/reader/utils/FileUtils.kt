@@ -6,6 +6,8 @@ import android.database.Cursor
 import android.net.Uri
 import android.provider.OpenableColumns
 import android.util.Log
+import java.io.File
+import android.webkit.MimeTypeMap
 
 object FileUtils {
     private const val TAG = "FileUtils"
@@ -42,20 +44,43 @@ object FileUtils {
         return uri.lastPathSegment
     }
 
+
     /**
-     * 获取文件的总页数。
-     * @param context 上下文，用于访问 ContentResolver。
-     * @param fileUri 文件的 URI。可以是 file:// 或 content:// 类型。
-     * @return 总页数。如果发生任何错误（如文件无效、权限不足等），则返回 0。
+     * 获取文件的 MIME 类型。
      */
-    fun getFilePageCount(context: Context, fileUri: Uri): Int {
-        return PdfUtils.getPdfPageCount(context, fileUri)
+    fun getMimeType(context: Context, uri: Uri): String? {
+        return if (ContentResolver.SCHEME_CONTENT == uri.scheme) {
+            context.contentResolver.getType(uri)
+        } else {
+            val fileExtension = MimeTypeMap.getFileExtensionFromUrl(uri.toString())
+            MimeTypeMap.getSingleton().getMimeTypeFromExtension(fileExtension.lowercase())
+        }
     }
 
     /**
-     * 生成文件封面，返回生成的封面的Uri
-     * */
-    suspend fun getCover(context: Context, fileUri: Uri): String? {
-        return PdfUtils.getPdfCover(context, fileUri)
+     * 如果 URI 是本地文件协议 (file://)，则尝试从磁盘删除该文件。
+     * @param uriString 文件的 URI 字符串
+     * @return 是否成功删除
+     */
+    fun deleteFileIfUriIsLocal(uriString: String): Boolean {
+        return try {
+            val uri = Uri.parse(uriString)
+            if (uri.scheme == "file") {
+                val file = File(uri.path ?: "")
+                if (file.exists()) {
+                    val result = file.delete()
+                    Log.d(TAG, "Deleted local file: $uriString, success: $result")
+                    result
+                } else {
+                    Log.d(TAG, "File does not exist: $uriString")
+                    false
+                }
+            } else {
+                false
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to delete file: $uriString", e)
+            false
+        }
     }
 }

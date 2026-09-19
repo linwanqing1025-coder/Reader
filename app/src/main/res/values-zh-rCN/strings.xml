@@ -150,10 +150,10 @@
     <string name="series_sort_create_time">创建时间</string>
     <string name="volume_sort_name">名称</string>
     <string name="volume_sort_create_time">创建时间</string>
-    <string name="volume_sort_last_read_time">最后阅读时间</string>
+    <string name="volume_sort_last_read_time">上次阅读</string>
     <string name="bookmark_sort_volume_name">书籍名称</string>
-    <string name="bookmark_sort_volume_create_time">书籍创建时间</string>
-    <string name="bookmark_sort_last_read_time">最后阅读时间</string>
+    <string name="bookmark_sort_volume_create_time">书籍创建</string>
+    <string name="bookmark_sort_last_read_time">上次阅读</string>
     <string name="bookmark_sort_latest_bookmark_time">最新书签时间</string>
 
     <string name="sort_by">排序依据</string>
