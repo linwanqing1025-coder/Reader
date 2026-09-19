@@ -1,6 +1,6 @@
 # Reader
 
-A lightweight, ad-free, privacy-focused open-source e-book reader for Android based on Jetpack Compose, with native PDF support in the current version.
+A lightweight, ad-free, privacy-focused open-source e-book reader for Android based on Jetpack Compose.
 
 ---
 
