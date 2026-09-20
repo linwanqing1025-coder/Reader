@@ -22,4 +22,5 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Build project
-        run: ./gradlew :app:assembleDebug
+        # 使用 --no-daemon 减少内存占用，并尝试清理配置缓存以重新检索仓库
+        run: ./gradlew :app:assembleDebug --no-daemon
