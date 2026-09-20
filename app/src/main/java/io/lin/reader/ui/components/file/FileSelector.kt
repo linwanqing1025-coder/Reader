@@ -38,11 +38,11 @@ val LocalFileSelector = compositionLocalOf<FileSelectorLauncher> {
  */
 @Composable
 fun rememberLazyFileSelector(): FileSelectorLauncher {
-    val context = LocalContext.current // 获取Context用于申请权限
+    val context = LocalContext.current // 获取 Context 用于申请权限
     val lifecycleOwner = LocalLifecycleOwner.current // 获取当前生命周期所有者
     val currentFileType = remember { mutableStateOf("*/*") }
     val currentOnFileSelected = remember { mutableStateOf<((List<String>) -> Unit)?>(null) }
-    // 标记是否是首次使用（区分"创建"和"使用"）
+    // 标记是否是首次使用（区分 "创建" 和 "使用"）
     val isFirstUse = remember { mutableStateOf(true) }
 
     val fileSelectLauncher = rememberLauncherForActivityResult(

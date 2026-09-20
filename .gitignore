@@ -37,3 +37,8 @@ proguard-project.txt
 
 # MuPDF reference source
 /docs/mupdf-android-viewer/
+
+.artifacts/
+.proxyai/
+app/.cxx/
+gradle/gradle-daemon-jvm.properties

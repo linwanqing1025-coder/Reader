@@ -5,7 +5,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.datastore.preferences.core.edit
-import io.lin.reader.ui.feature.setting.details.CropMode
+import io.lin.reader.ui.maintab.setting.details.CropMode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 

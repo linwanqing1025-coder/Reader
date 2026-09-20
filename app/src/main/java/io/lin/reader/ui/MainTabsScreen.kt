@@ -24,12 +24,12 @@ import io.lin.reader.navigation.NavigationItems
 import io.lin.reader.navigation.getEnterAnimation
 import io.lin.reader.navigation.getExitAnimation
 import io.lin.reader.navigation.rememberSharedViewModelStoreNavEntryDecorator
-import io.lin.reader.ui.feature.bookmark.BookmarkScreen
-import io.lin.reader.ui.feature.favourite.FavouriteScreen
-import io.lin.reader.ui.feature.history.HistoryScreen
-import io.lin.reader.ui.feature.setting.SettingScreen
-import io.lin.reader.ui.feature.setting.SettingScreenViewModel
-import io.lin.reader.ui.feature.shelf.ShelfScreen
+import io.lin.reader.ui.maintab.bookmark.BookmarkScreen
+import io.lin.reader.ui.maintab.favourite.FavouriteScreen
+import io.lin.reader.ui.maintab.history.HistoryScreen
+import io.lin.reader.ui.screens.setting.SettingScreen
+import io.lin.reader.ui.maintab.setting.SettingScreenViewModel
+import io.lin.reader.ui.screens.shelf.ShelfScreen
 import kotlinx.serialization.json.Json
 
 @Composable
@@ -121,7 +121,7 @@ private fun RootTabNavDisplay(
     ) { key: NavKey ->
         when (key) {
             // 书架
-            NavKey.Root.Shelf -> NavEntry(
+            NavKey.Shelf -> NavEntry(
                 key = key,
                 metadata = NavDisplay.transitionSpec {
                     val enter = getEnterAnimation(navSuiteType)
@@ -130,12 +130,12 @@ private fun RootTabNavDisplay(
                 }
             ) {
                 ShelfScreen(
-                    entryVolumeReading = { onNavigate(NavKey.Reading(it.id)) }
+                    onNavigate = { onNavigate(it) },
                 )
             }
 
             // 收藏
-            NavKey.Root.Favourite -> NavEntry(
+            NavKey.Favourite -> NavEntry(
                 key = key,
                 metadata = NavDisplay.transitionSpec {
                     val enter = getEnterAnimation(navSuiteType)
@@ -149,7 +149,7 @@ private fun RootTabNavDisplay(
             }
 
             // 书签
-            NavKey.Root.Bookmark -> NavEntry(
+            NavKey.Bookmark -> NavEntry(
                 key = key,
                 metadata = NavDisplay.transitionSpec {
                     val enter = getEnterAnimation(navSuiteType)
@@ -165,7 +165,7 @@ private fun RootTabNavDisplay(
             }
 
             // 历史记录
-            NavKey.Root.History -> NavEntry(
+            NavKey.History -> NavEntry(
                 key = key,
                 metadata = NavDisplay.transitionSpec {
                     val enter = getEnterAnimation(navSuiteType)
@@ -179,7 +179,7 @@ private fun RootTabNavDisplay(
             }
 
             // 设置
-            NavKey.Root.Setting -> NavEntry(
+            NavKey.Setting -> NavEntry(
                 key = key,
                 metadata = NavDisplay.transitionSpec {
                     val enter = getEnterAnimation(navSuiteType)

@@ -9,7 +9,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.datastore.preferences.core.edit
-import io.lin.reader.ui.feature.reading.feature.font.PRESET_FONTS
+import io.lin.reader.mupdf.font.PRESET_FONTS
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
