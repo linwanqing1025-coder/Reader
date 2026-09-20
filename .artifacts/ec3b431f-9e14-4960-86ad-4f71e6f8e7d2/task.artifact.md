@@ -1,6 +1,0 @@
-- [x] 升级根目录 `build.gradle.kts` 插件版本
-- [x] 升级 `app/build.gradle.kts` 中的 KSP 插件版本
-- [x] 执行 Gradle Sync
-- [x] 验证项目构建状态
-- [x] 更新 Gradle Wrapper 到 9.6.1
-- [x] 适配 AGP 9.0 内置 Kotlin 语法 (移除冗余插件和配置)
