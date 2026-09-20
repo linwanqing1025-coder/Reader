@@ -38,15 +38,11 @@ import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -81,25 +77,7 @@ fun FloatingNavigationBar(
     onNavigate: (NavKey) -> Boolean,
 ) {
     // 存储 navigationItemsList 的导航项位置
-    val itemPositions = remember { mutableStateMapOf<Int, Rect>() }
-    // 存储目标导航项位置
-    var target by remember {
-        mutableStateOf<Pair<NavKey, Rect>?>(null)
-    }
-    // 初始化 target
-    LaunchedEffect(itemPositions.size, currentKey) {
-        if (target == null && currentKey != null) {
-            val index = navigationItemsList.indexOfFirst {
-                it.key == currentKey
-            }
-
-            if (index >= 0) {
-                itemPositions[index]?.let { rect ->
-                    target = currentKey to rect
-                }
-            }
-        }
-    }
+    val itemPositions = remember { mutableStateMapOf<NavKey, Rect>() }
 
     // 处理退场动画：如果不在根页面，则强制触发 scrollBehavior 的隐藏位移
     LaunchedEffect(isRootPage) {
@@ -129,11 +107,7 @@ fun FloatingNavigationBar(
         expanded = true,
         content = {
             FancyRowIndicator(
-                if (target != null && target!!.first == currentKey) {
-                    target!!.second
-                } else {
-                    Rect.Zero
-                }
+                targetRect = itemPositions[currentKey] ?: Rect.Zero,
             )
             navigationItemsList.forEachIndexed { index, item ->
                 val itemDescription = stringResource(item.contentDescription)
@@ -145,7 +119,7 @@ fun FloatingNavigationBar(
                                 coords.positionInParent(),
                                 coords.size.toSize()
                             )
-                            itemPositions[index] = rect
+                            itemPositions[item.key] = rect
                         },
                     contentAlignment = Alignment.Center
                 ) {
@@ -158,10 +132,6 @@ fun FloatingNavigationBar(
                             PlainTooltip(
                                 modifier =
                                     Modifier.semantics {
-                                        // TODO(b/496338253): Remove this modifier once bug
-                                        // where
-                                        // tooltip text is not announced
-                                        //  by a11y screen readers is resolved.
                                         liveRegion = LiveRegionMode.Assertive
                                         paneTitle = itemDescription
                                     }
@@ -172,11 +142,7 @@ fun FloatingNavigationBar(
                         state = rememberTooltipState(),
                     ) {
                         IconButton(
-                            onClick = {
-                                // 导航并更新目标导航项位置
-                                onNavigate(item.key)
-                                target = item.key to (itemPositions[index] ?: Rect.Zero)
-                            },
+                            onClick = { onNavigate(item.key) },
                             modifier = Modifier.fillMaxSize()
                         ) {
                             Icon(item.icon, contentDescription = itemDescription)
@@ -254,11 +220,11 @@ private fun FloatingNavigationBarPreview() {
         restore = { Json.decodeFromString<List<NavKey>>(it).toMutableStateList() }
     )
     val backStack = rememberSaveable(saver = navKeyListSaver) {
-        mutableStateListOf(NavKey.Root.Shelf)
+        mutableStateListOf(NavKey.Shelf)
     }
     val backToTab = {
         backStack.clear()
-        backStack.add(NavKey.Root.Shelf)
+        backStack.add(NavKey.Shelf)
     }
     val onNavigate: (NavKey) -> Boolean = { newKey: NavKey ->
         if (newKey is NavKey.Root) {
@@ -316,17 +282,11 @@ private fun FloatingNavigationBarPreview() {
                                 .fillMaxWidth()
                         )
                         Button(
-                            onClick = {
-                                onNavigate(NavKey.SettingDetails.Sort)
-                            }
+                            onClick = { onNavigate(NavKey.Sort) }
                         ) {
                             Text(text = "Navigate to detail screen")
                         }
-                        Button(
-                            onClick = {
-                                backToTab()
-                            }
-                        ) {
+                        Button(onClick = { backToTab() }) {
                             Text(text = "Navigate back to tab screen")
                         }
                     }

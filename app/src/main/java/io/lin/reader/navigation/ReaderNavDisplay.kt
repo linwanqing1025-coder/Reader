@@ -7,15 +7,16 @@ import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import io.lin.reader.ui.MainTabsScreen
-import io.lin.reader.ui.feature.reading.ReadingScreen
-import io.lin.reader.ui.feature.setting.SettingScreenViewModel
-import io.lin.reader.ui.feature.setting.details.AppAppearanceDetailsScreen
-import io.lin.reader.ui.feature.setting.details.InteractionDetailsScreen
-import io.lin.reader.ui.feature.setting.details.OtherReadingSettingDetailsScreen
-import io.lin.reader.ui.feature.setting.details.ReaderColorDetailsScreen
-import io.lin.reader.ui.feature.setting.details.ReadingModeDetailsScreen
-import io.lin.reader.ui.feature.setting.details.ReflowDetailsScreen
-import io.lin.reader.ui.feature.setting.details.SortDetailsScreen
+import io.lin.reader.ui.maintab.reading.ReadingScreen
+import io.lin.reader.ui.maintab.setting.SettingScreenViewModel
+import io.lin.reader.ui.screens.shelf.SeriesDetailScreen
+import io.lin.reader.ui.maintab.setting.details.AppAppearanceDetailsScreen
+import io.lin.reader.ui.maintab.setting.details.InteractionDetailsScreen
+import io.lin.reader.ui.maintab.setting.details.OtherReadingSettingDetailsScreen
+import io.lin.reader.ui.maintab.setting.details.ReaderColorDetailsScreen
+import io.lin.reader.ui.maintab.setting.details.ReadingModeDetailsScreen
+import io.lin.reader.ui.maintab.setting.details.ReflowDetailsScreen
+import io.lin.reader.ui.maintab.setting.details.SortDetailsScreen
 
 @Composable
 fun ReaderNavDisplay(
@@ -54,24 +55,24 @@ fun ReaderNavDisplay(
                     val enter = getEnterAnimation()
                     val exit = getExitAnimation()
                     enter togetherWith exit
-                } + SharedViewModelStoreNavEntryDecorator.parent(NavKey.Root.Setting.toString())
+                } + SharedViewModelStoreNavEntryDecorator.parent(NavKey.Setting.toString())
             ) {
                 val parentViewModel = viewModel<SettingScreenViewModel>(
                     viewModelStoreOwner = LocalSharedViewModelStoreOwner.current
                 )
                 when (key) {
-                    NavKey.SettingDetails.AppAppearance -> AppAppearanceDetailsScreen(
+                    NavKey.AppAppearance -> AppAppearanceDetailsScreen(
                         onNavigateBack = onNavigateUp,
                         appPreferences = parentViewModel.appPreferences
                     )
 
-                    NavKey.SettingDetails.Sort -> SortDetailsScreen(
+                    NavKey.Sort -> SortDetailsScreen(
                         onNavigateBack = onNavigateUp,
                         shelfPreferences = parentViewModel.shelfPreferences,
                         bookmarkPreferences = parentViewModel.bookmarkPreferences
                     )
 
-                    NavKey.SettingDetails.ReaderColor -> ReaderColorDetailsScreen(
+                    NavKey.ReaderColor -> ReaderColorDetailsScreen(
                         onNavigateBack = onNavigateUp,
                         readerColor = parentViewModel.readingPreferences.readerColor,
                         onPageColorChange = {
@@ -91,25 +92,25 @@ fun ReaderNavDisplay(
                         }
                     )
 
-                    NavKey.SettingDetails.ReadingMode -> ReadingModeDetailsScreen(
+                    NavKey.ReadingMode -> ReadingModeDetailsScreen(
                         onNavigateBack = onNavigateUp,
                         readerPreferences = parentViewModel.readingPreferences
                     )
 
-                    NavKey.SettingDetails.Interaction -> InteractionDetailsScreen(
+                    NavKey.Interaction -> InteractionDetailsScreen(
                         onNavigateBack = onNavigateUp,
                         interactionStyle = parentViewModel.readingPreferences.interactionStyle,
                         rtlMode = parentViewModel.readingPreferences.rtlMode,
                         updateInteractionStyle = parentViewModel.readingPreferences::updateInteractionStyle
                     )
 
-                    NavKey.SettingDetails.Reflow -> ReflowDetailsScreen(
+                    NavKey.Reflow -> ReflowDetailsScreen(
                         onNavigateBack = onNavigateUp,
                         readerPreferences = parentViewModel.readingPreferences,
                         reflowPreferences = parentViewModel.reflowPreferences
                     )
 
-                    NavKey.SettingDetails.OtherReading -> OtherReadingSettingDetailsScreen(
+                    NavKey.OtherReading -> OtherReadingSettingDetailsScreen(
                         onNavigateBack = onNavigateUp,
                         readerPreferences = parentViewModel.readingPreferences
                     )
@@ -128,6 +129,21 @@ fun ReaderNavDisplay(
                     bookId = key.bookId,
                     pageNumber = key.pageNumber,
                     onNavigateUp = onNavigateUp
+                )
+            }
+
+            is NavKey.SeriesDetail -> NavEntry(
+                key = key,
+                metadata = NavDisplay.transitionSpec {
+                    val enter = getEnterAnimation()
+                    val exit = getExitAnimation()
+                    enter togetherWith exit
+                }
+            ) {
+                SeriesDetailScreen(
+                    seriesId = key.seriesId,
+                    onNavBack = onNavigateUp,
+                    entryVolumeReading = { onNavigate(NavKey.Reading(it.id)) }
                 )
             }
         }

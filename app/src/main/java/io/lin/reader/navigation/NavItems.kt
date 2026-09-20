@@ -39,30 +39,30 @@ enum class NavigationItems(
         R.string.navigation_label_shelf,
         Icons.AutoMirrored.Default.LibraryBooks,
         R.string.navigation_label_shelf,
-        NavKey.Root.Shelf
+        NavKey.Shelf
     ),
     FAVOURITE(
         R.string.navigation_label_favourite,
         Icons.Default.Star,
         R.string.navigation_label_favourite,
-        NavKey.Root.Favourite
+        NavKey.Favourite
     ),
     BOOKMARK(
         R.string.navigation_label_bookmark,
         Icons.Default.Bookmarks,
         R.string.navigation_label_bookmark,
-        NavKey.Root.Bookmark
+        NavKey.Bookmark
     ),
     HISTORY(
         R.string.navigation_label_history,
         Icons.Default.History,
         R.string.navigation_label_history,
-        NavKey.Root.History
+        NavKey.History
     ),
     SETTING(
         R.string.navigation_label_setting,
         Icons.Default.Settings,
         R.string.navigation_label_setting,
-        NavKey.Root.Setting
+        NavKey.Setting
     ),
 }

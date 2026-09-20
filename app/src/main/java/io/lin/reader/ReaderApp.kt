@@ -43,7 +43,7 @@ fun ReaderApp() {
         restore = { Json.decodeFromString<List<NavKey>>(it).toMutableStateList() }
     )
     val backStack = rememberSaveable(saver = navKeyListSaver) {
-        mutableStateListOf(NavKey.Root.Shelf)
+        mutableStateListOf(NavKey.Shelf)
     }
     val onNavigateUp = {
         if (backStack.size > 1) {
