@@ -1,6 +1,9 @@
-package io.lin.reader.ui.maintab.reading
+package io.lin.reader.ui.screens.reading
 
 import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.pm.ActivityInfo
+import android.content.res.Configuration
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -11,27 +14,13 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectTransformGestures
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -47,27 +36,24 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.platform.ViewConfiguration
-import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import io.lin.reader.R
 import io.lin.reader.data.preferences.ReadingMode
+import io.lin.reader.ui.components.dialog.BookmarkAddDialog
 import io.lin.reader.ui.components.dialog.NotificationDialog
-import io.lin.reader.ui.components.textfield.StyledOutlinedTextField
-import io.lin.reader.ui.maintab.reading.control.ReadingControlsOverlay
-import io.lin.reader.ui.maintab.reading.control.ToolsBar
-import io.lin.reader.ui.maintab.reading.feature.display.ReadingModeContainer
-import io.lin.reader.ui.maintab.reading.control.InteractionMask
-import io.lin.reader.ui.maintab.reading.control.interactionStyle
-import io.lin.reader.ui.maintab.reading.feature.display.MAX_SCALE
-import io.lin.reader.ui.maintab.reading.feature.display.MIN_SCALE
-import io.lin.reader.ui.maintab.reading.feature.display.ReadingTransform
+import io.lin.reader.ui.screens.reading.control.InteractionMask
+import io.lin.reader.ui.screens.reading.control.ReadingControlsOverlay
+import io.lin.reader.ui.screens.reading.control.ToolsBar
+import io.lin.reader.ui.screens.reading.control.interactionStyle
+import io.lin.reader.ui.screens.reading.display.ReadingModeContainer
+import io.lin.reader.ui.screens.reading.feature.display.MAX_SCALE
+import io.lin.reader.ui.screens.reading.feature.display.MIN_SCALE
+import io.lin.reader.ui.screens.reading.feature.display.ReadingTransform
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.abs
@@ -97,7 +83,7 @@ fun BookReader(
     }
 
     val muPdfCore by viewModel.mCore.collectAsState()
-    val pageCount = uiState.volume!!.totalPages
+    val pageCount = uiState.totalPage
 
     val initialPage = remember(book.id, uiState.currentPage) {
         uiState.currentPage
@@ -108,10 +94,23 @@ fun BookReader(
         initialPage
     ) { mutableIntStateOf(initialPage) }
 
+    val context = LocalContext.current
+    val activity = context as? Activity
+
+    /*val initialOrientation = remember {
+        activity?.requestedOrientation ?: ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            activity?.requestedOrientation = initialOrientation
+        }
+    }*/
+
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
     var showControls by rememberSaveable { mutableStateOf(false) }
-    var showAddBookmarkDialog by rememberSaveable { mutableStateOf(false) }
-    var showDeleteBookmarkDialog by rememberSaveable { mutableStateOf(false) }
-    var bookmarkLabel by rememberSaveable { mutableStateOf("") }
 
     val readingTransform = remember { ReadingTransform() }
 
@@ -171,41 +170,19 @@ fun BookReader(
         //上下控制栏
         ReadingControlsOverlay(
             visible = showControls,
-            onBackClick = navigateBack,
-            onAddBookmarkClick = {
-                bookmarkLabel = viewModel.generateAutoBookmarkLabel()
-                showAddBookmarkDialog = true
-            },
-            onDeleteBookmarkClick = { showDeleteBookmarkDialog = true }
+            onNavBack = navigateBack,
+            isScreenRotated = isLandscape,
+            onRotateScreen = {
+                activity?.let { act ->
+                    val currentOrientation = act.resources.configuration.orientation
+                    act.requestedOrientation = if (currentOrientation == Configuration.ORIENTATION_LANDSCAPE) {
+                        ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+                    } else {
+                        ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+                    }
+                }
+            }
         )
-
-        if (showAddBookmarkDialog) {
-            BookmarkAddDialog(
-                currentPage = currentPageNumber + 1,
-                totalPages = pageCount,
-                value = bookmarkLabel,
-                onValueChange = { bookmarkLabel = it },
-                validateInput = { bookmarkLabel.isNotBlank() },
-                onDismiss = { showAddBookmarkDialog = false },
-                onConfirm = {
-                    viewModel.addBookmark(bookmarkLabel, currentPageNumber)
-                    showAddBookmarkDialog = false
-                }
-            )
-        }
-        if (showDeleteBookmarkDialog) {
-            val notificationText =
-                stringResource(R.string.reading_bookmark_delete_notification, currentPageNumber + 1)
-            NotificationDialog(
-                title = stringResource(R.string.bookmark_dialog_title_delete),
-                notification = notificationText,
-                onDismiss = { showDeleteBookmarkDialog = false },
-                onConfirm = {
-                    viewModel.deleteBookmark(currentPageNumber)
-                    showDeleteBookmarkDialog = false
-                }
-            )
-        }
     }
 }
 
@@ -321,7 +298,7 @@ private fun GestureInteractionLayer(
                                             (-(offset.y - heightPx / 2f) * (targetScale - 1f))
                                                 .coerceIn(-maxOffsetY, maxOffsetY)
 
-                                        Log.d(TAG, "targetScale = ${targetScale}")
+                                        Log.d(TAG, "targetScale = $targetScale")
 
                                         launch { scaleAnim.animateTo(targetScale, tween(300)) }
                                         launch { offsetXAnim.animateTo(targetOffsetX, tween(300)) }
@@ -454,132 +431,6 @@ private fun GestureInteractionLayer(
                 }
             }
 
-        }
-    }
-}
-
-@Composable
-private fun BookmarkAddDialog(
-    currentPage: Int,
-    totalPages: Int,
-    value: String,
-    onValueChange: (String) -> Unit,
-    validateInput: () -> Boolean,
-    onDismiss: () -> Unit,
-    onConfirm: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Dialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties(
-            dismissOnBackPress = true,
-            dismissOnClickOutside = true,
-            usePlatformDefaultWidth = true
-        )
-    ) {
-        Surface(
-            modifier = modifier.width(dimensionResource(R.dimen.dialog_size)),
-            shape = RoundedCornerShape(28.dp),
-            color = MaterialTheme.colorScheme.surface,
-            tonalElevation = 6.dp
-        ) {
-            Column(
-                modifier = Modifier.padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = stringResource(R.string.reading_bookmark_dialog_title_add),
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
-
-                StyledOutlinedTextField(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 16.dp),
-                    value = value,
-                    placeholder = stringResource(R.string.reading_bookmark_dialog_placeholder),
-                    labelText = stringResource(R.string.reading_bookmark_dialog_label),
-                    errorText = stringResource(R.string.reading_bookmark_dialog_error),
-                    onValueChange = onValueChange,
-                    validateInput = validateInput
-                )
-
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant,
-                ) {
-                    Row(
-                        modifier = Modifier.padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column {
-                            Text(
-                                text = stringResource(R.string.reading_bookmark_dialog_location),
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Text(
-                                text = stringResource(
-                                    R.string.reading_bookmark_dialog_location_detail,
-                                    currentPage,
-                                    totalPages
-                                ),
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Button(
-                        onClick = onDismiss,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                        ),
-                        shape = RoundedCornerShape(
-                            dimensionResource(R.dimen.composable_rounded_corner_radius)
-                        ),
-                        modifier = Modifier
-                            .height(40.dp)
-                            .height(IntrinsicSize.Min),
-                    ) {
-                        Text(
-                            text = stringResource(R.string.cancel),
-                            fontSize = 16.sp,
-                        )
-                    }
-                    Button(
-                        onClick = onConfirm,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary
-                        ),
-                        shape = RoundedCornerShape(
-                            dimensionResource(R.dimen.composable_rounded_corner_radius)
-                        ),
-                        modifier = Modifier
-                            .height(40.dp)
-                            .height(IntrinsicSize.Min)
-                    ) {
-                        Text(
-                            text = stringResource(R.string.confirm),
-                            fontSize = 16.sp,
-                        )
-                    }
-                }
-            }
         }
     }
 }

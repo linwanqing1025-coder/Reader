@@ -36,7 +36,7 @@ proguard-project.txt
 .idea
 
 # MuPDF reference source
-/docs/mupdf-android-viewer/
+docs/
 
 .artifacts/
 .proxyai/

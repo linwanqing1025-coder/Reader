@@ -1,13 +1,17 @@
 package io.lin.reader.mupdf.search
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.artifex.mupdf.fitz.Quad
-import com.artifex.mupdf.viewer.MuPDFCore
+import com.artifex.mupdf.fitz.StructuredText
+import io.lin.reader.mupdf.core.MuPDFCoreExtended
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
+
+private const val TAG = "MuPDFSearch.kt"
 
 /**
  * 单页搜索结果
@@ -16,6 +20,10 @@ data class PageSearchResult(
     val pageIndex: Int,
     val searchBoxes: Array<Array<Quad>>?
 )
+
+private const val SEARCH_STYLE =
+        StructuredText.SEARCH_IGNORE_CASE or
+        StructuredText.SEARCH_REGEXP
 
 /**
  * 重写的 SearchTask.java 与 SearchTaskResult.java
@@ -38,7 +46,7 @@ class MuPDFSearch {
      * @param onProgress 进度反馈回调函数，参数为正在检索的页索引
      */
     suspend fun findNextHit(
-        core: MuPDFCore,
+        core: MuPDFCoreExtended,
         text: String,
         direction: Int,
         displayPage: Int,
@@ -69,11 +77,18 @@ class MuPDFSearch {
         var index = if (start == -1) displayPage else start + direction
         val pageCount = core.countPages()
 
+        // 生成正则表达式文以支持断行文本搜索
+        val pattern = text.map { ch ->
+            if (ch in "\\.[]{}()*+?^$|") "\\$ch" else ch.toString()
+        }.joinToString("\\s*")
+
         while (index in 0 until pageCount && isActive) {
             withContext(Dispatchers.Main) { onProgress(index) }
 
             val searchHits = try {
-                core.searchPage(index, text)
+                // TODO: 测试断行词搜索
+                Log.d(TAG, "pattern: $pattern")
+                core.searchPage(index, pattern, SEARCH_STYLE)
             } catch (e: Exception) {
                 null
             }
@@ -95,7 +110,7 @@ class MuPDFSearch {
      * @param onProgress 进度反馈回调函数，参数为正在检索的页索引
      */
     suspend fun searchDocument(
-        core: MuPDFCore,
+        core: MuPDFCoreExtended,
         text: String,
         onProgress: (Int) -> Unit = {}
     ): List<PageSearchResult> = withContext(Dispatchers.IO) {
@@ -109,7 +124,7 @@ class MuPDFSearch {
             withContext(Dispatchers.Main) { onProgress(i) }
 
             val searchHits = try {
-                core.searchPage(i, text)
+                core.searchPage(i, text, SEARCH_STYLE)
             } catch (e: Exception) {
                 null
             }

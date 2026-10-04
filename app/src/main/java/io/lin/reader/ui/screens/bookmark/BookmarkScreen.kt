@@ -1,22 +1,29 @@
-package io.lin.reader.ui.maintab.bookmark
+package io.lin.reader.ui.screens.bookmark
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.DeleteSweep
+import androidx.compose.material.icons.outlined.DeleteSweep
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.material3.TooltipAnchorPosition
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -30,34 +37,35 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.paneTitle
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.lin.reader.R
 import io.lin.reader.data.database.Bookmark
 import io.lin.reader.data.database.VolumeWithBookmarks
 import io.lin.reader.data.preferences.BookmarkSortMethod
+import io.lin.reader.ui.ViewModelProvider
 import io.lin.reader.ui.components.blankscreen.BlankScreenContent
 import io.lin.reader.ui.components.dialog.NotificationDialog
-import io.lin.reader.ui.components.menu.StyledMenu
-import io.lin.reader.ui.components.menu.StyledMenuIcon
-import io.lin.reader.ui.components.menu.StyledMenuItem
-import io.lin.reader.ui.components.screenbar.StyledBarIconButton
-import io.lin.reader.ui.components.screenbar.StyledScreenBar
+import io.lin.reader.ui.components.menu.StyledDropdownMenu
+import io.lin.reader.ui.components.menu.StyledDropdownMenuItem
 import io.lin.reader.ui.components.snackbar.StyledSnackbarHost
-import io.lin.reader.ui.ViewModelProvider
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookmarkScreen(
     modifier: Modifier = Modifier,
     viewModel: BookmarkScreenViewModel = viewModel(factory = ViewModelProvider.Factory),
     onBookmarkClick: (Long, Int) -> Unit, // 跳转到书籍的特定页
 ) {
-    val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
     val bookmarkPreferences = viewModel.bookmarkPreferences
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+
+    val context = LocalContext.current
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
@@ -67,8 +75,8 @@ fun BookmarkScreen(
         topBar = {
             BookmarkScreenTopBar(
                 scrollBehavior = scrollBehavior,
-                sortPreference = uiState.sortMethod,
-                onSortMethodChange = { bookmarkPreferences.updateBookmarkSortMethod(it) },
+                sortMethod = uiState.sortMethod,
+                updateSortMethod = { bookmarkPreferences.updateBookmarkSortMethod(it) },
                 clearAllBookmarks = {
                     val appContext = context.applicationContext
                     if (uiState.volumesWithBookmarks.isEmpty()) {
@@ -93,7 +101,7 @@ fun BookmarkScreen(
             modifier = Modifier.padding(innerPadding),
             volumeWithBookmarks = uiState.volumesWithBookmarks,
             onBookmarkClick = { bookmark ->
-                onBookmarkClick(bookmark.volumeId, bookmark.pageNumber)
+                onBookmarkClick(bookmark.volumeId, bookmark.history.pageIndex ?: 0) // TODO: 针对重排文档书签跳转的适配
             },
             onBookmarkDelete = { bookmark ->
                 viewModel.deleteBookmark(bookmark)
@@ -106,58 +114,110 @@ fun BookmarkScreen(
 @Composable
 private fun BookmarkScreenTopBar(
     modifier: Modifier = Modifier,
-    scrollBehavior: TopAppBarScrollBehavior? = null,
-    sortPreference: BookmarkSortMethod,
-    onSortMethodChange: (BookmarkSortMethod) -> Unit,
+    sortMethod: BookmarkSortMethod,
+    updateSortMethod: (BookmarkSortMethod) -> Unit,
     clearAllBookmarks: () -> Unit,
+    scrollBehavior: TopAppBarScrollBehavior? = null,
 ) {
     val isClearingAllBookmarks = remember { mutableStateOf(false) }
-    StyledScreenBar(
+
+    val sortIconStr = stringResource(R.string.sort_bookmark_sort)
+    val clearStr = stringResource(R.string.bookmark_top_bar_clear_bookmark)
+    val onClearClick = { isClearingAllBookmarks.value = true }
+
+    TopAppBar(
         modifier = modifier,
-        title = stringResource(R.string.navigation_label_bookmark),
-        iconButtonTools = {
-            Box {
-                var sortSubMenuExpanded by remember { mutableStateOf(false) }
-                StyledBarIconButton(
-                    imageVector = Icons.AutoMirrored.Filled.Sort,
-                    contentDescription = stringResource(R.string.sort_bookmark_sort),
-                    onClick = { sortSubMenuExpanded = true }
-                )
-                StyledMenu(
-                    expanded = sortSubMenuExpanded,
-                    onDismissRequest = { sortSubMenuExpanded = false }
+        title = {
+            Text(
+                stringResource(R.string.navigation_label_bookmark),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        },
+        actions = {
+            // Sort
+            TooltipBox(
+                positionProvider =
+                    TooltipDefaults.rememberTooltipPositionProvider(
+                        TooltipAnchorPosition.Below
+                    ),
+                tooltip = {
+                    PlainTooltip(
+                        modifier = Modifier.semantics {
+                            liveRegion = LiveRegionMode.Assertive
+                            paneTitle = sortIconStr
+                        }
+                    ) {
+                        Text(sortIconStr)
+                    }
+                },
+                state = rememberTooltipState(),
+            )
+            {
+                var isMainMenuExpanded by remember { mutableStateOf(false) }
+                IconButton(onClick = { isMainMenuExpanded = true }) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.Sort,
+                        contentDescription = sortIconStr,
+                    )
+                }
+
+                StyledDropdownMenu(
+                    expanded = isMainMenuExpanded,
+                    onDismissRequest = { isMainMenuExpanded = false },
                 ) {
-                    BookmarkSortMethod.entries.forEachIndexed { _ , method ->
-                        StyledMenuItem(
-                            text = when (method) {
-                                BookmarkSortMethod.VolumeName -> stringResource(R.string.bookmark_sort_volume_name)
-                                BookmarkSortMethod.LastReadTime -> stringResource(R.string.bookmark_sort_last_read_time)
-                                BookmarkSortMethod.VolumeCreateTime -> stringResource(R.string.bookmark_sort_volume_create_time)
-                                BookmarkSortMethod.LatestBookmarkTime -> stringResource(R.string.bookmark_sort_latest_bookmark_time)
+                    BookmarkSortMethod.entries.forEach { method ->
+                        StyledDropdownMenuItem(
+                            text = {
+                                Text(
+                                    when (method) {
+                                        BookmarkSortMethod.VolumeName -> stringResource(R.string.bookmark_sort_volume_name)
+                                        BookmarkSortMethod.LastReadTime -> stringResource(R.string.bookmark_sort_last_read_time)
+                                        BookmarkSortMethod.VolumeCreateTime -> stringResource(R.string.bookmark_sort_volume_create_time)
+                                        BookmarkSortMethod.LatestBookmarkTime -> stringResource(R.string.bookmark_sort_latest_bookmark_time)
+                                    }
+                                )
                             },
-                            onClick = {
-                                onSortMethodChange(method)
-                                sortSubMenuExpanded = false
-                            },
-                            leadingIcon = {
-                                if (sortPreference == method) {
-                                    StyledMenuIcon(
-                                        imageVector = Icons.Default.Check,
-                                        contentDescription = stringResource(R.string.bookmark_top_bar_sort_selected)
+                            onClick = { updateSortMethod(method) },
+                            leadingIcon = if (sortMethod == method) {
+                                {
+                                    Icon(
+                                        Icons.Default.Check,
+                                        stringResource(R.string.shelf_top_bar_sort_selected)
                                     )
-                                } else {
-                                    Spacer(Modifier.size(22.dp))
                                 }
-                            }
+                            } else null
                         )
                     }
                 }
             }
-            StyledBarIconButton(
-                imageVector = Icons.Filled.DeleteSweep,
-                contentDescription = stringResource(R.string.bookmark_top_bar_clear_bookmark),
-                onClick = { isClearingAllBookmarks.value = true },
-            )
+
+            // Clear All Bookmarks
+            TooltipBox(
+                positionProvider =
+                    TooltipDefaults.rememberTooltipPositionProvider(
+                        TooltipAnchorPosition.Below
+                    ),
+                tooltip = {
+                    PlainTooltip(
+                        modifier =
+                            Modifier.semantics {
+                                liveRegion = LiveRegionMode.Assertive
+                                paneTitle = clearStr
+                            }
+                    ) {
+                        Text(clearStr)
+                    }
+                },
+                state = rememberTooltipState(),
+            ) {
+                IconButton(onClick = onClearClick) {
+                    Icon(
+                        imageVector = Icons.Outlined.DeleteSweep,
+                        contentDescription = clearStr,
+                    )
+                }
+            }
         },
         scrollBehavior = scrollBehavior
     )

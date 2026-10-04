@@ -151,7 +151,7 @@ interface VolumeDao {
      * 高效地将所有书籍的上次阅读时间重置为 NULL，并将上次阅读页数重置为 0。
      * @return 返回受影响的行数。
      */
-    @Query("UPDATE volumes SET lastReadTime = NULL, lastReadPage = 0 WHERE lastReadTime IS NOT NULL OR lastReadPage != 0")
+    @Query("UPDATE volumes SET history_mupdfMark = NULL, history_time = NULL, history_readProgress = NULL, history_pageIndex = NULL, history_chapterInfo = NULL WHERE history_time IS NOT NULL OR history_pageIndex IS NOT NULL")
     suspend fun resetAllHistory(): Int
 
     /**
@@ -188,7 +188,7 @@ interface VolumeDao {
      * 获取所有收藏的书籍及其系列。
      */
     @Transaction
-    @Query("SELECT * FROM volumes WHERE isFavorite = 1 ORDER BY lastReadTime DESC, createTime DESC")
+    @Query("SELECT * FROM volumes WHERE isFavorite = 1 ORDER BY history_time DESC, createTime DESC")
     fun getFavoriteVolumes(): PagingSource<Int, VolumeWithSeries>
 
     /**
@@ -206,8 +206,8 @@ interface VolumeDao {
     @Query(
         """
         SELECT * FROM volumes
-        WHERE lastReadTime IS NOT NULL
-        ORDER BY lastReadTime DESC
+        WHERE history_time IS NOT NULL
+        ORDER BY history_time DESC
     """
     )
     fun getReadVolumes(): PagingSource<Int, VolumeWithSeries>
@@ -220,7 +220,7 @@ interface VolumeDao {
     @Query(
         """
         SELECT * FROM volumes
-        WHERE lastReadTime IS NULL
+        WHERE history_time IS NULL
         ORDER BY CASE WHEN createTime IS NULL THEN 1 ELSE 0 END, createTime DESC
     """
     )
@@ -263,10 +263,10 @@ interface VolumeDao {
     @Query("SELECT * FROM volumes WHERE seriesId = :seriesId ORDER BY CASE WHEN createTime IS NULL THEN 1 ELSE 0 END, createTime DESC")
     suspend fun getVolumesFromSeriesInCreateTimeOrderDesc(seriesId: Long): List<Volume>
 
-    @Query("SELECT * FROM volumes WHERE seriesId = :seriesId ORDER BY CASE WHEN lastReadTime IS NULL THEN 1 ELSE 0 END, lastReadTime ASC")
+    @Query("SELECT * FROM volumes WHERE seriesId = :seriesId ORDER BY CASE WHEN history_time IS NULL THEN 1 ELSE 0 END, history_time ASC")
     suspend fun getVolumesFromSeriesInLastReadTimeOrder(seriesId: Long): List<Volume>
 
-    @Query("SELECT * FROM volumes WHERE seriesId = :seriesId ORDER BY CASE WHEN lastReadTime IS NULL THEN 1 ELSE 0 END, lastReadTime DESC")
+    @Query("SELECT * FROM volumes WHERE seriesId = :seriesId ORDER BY CASE WHEN history_time IS NULL THEN 1 ELSE 0 END, history_time DESC")
     suspend fun getVolumesFromSeriesInLastReadTimeOrderDesc(seriesId: Long): List<Volume>
 
     @Query("SELECT * FROM volumes WHERE seriesId = :seriesId ORDER BY volumeName ASC")
@@ -281,10 +281,10 @@ interface VolumeDao {
     @Query("SELECT * FROM volumes WHERE seriesId = :seriesId ORDER BY CASE WHEN createTime IS NULL THEN 1 ELSE 0 END, createTime DESC")
     fun getVolumesStreamFromSeriesInCreateTimeOrderDesc(seriesId: Long): PagingSource<Int, Volume>
 
-    @Query("SELECT * FROM volumes WHERE seriesId = :seriesId ORDER BY CASE WHEN lastReadTime IS NULL THEN 1 ELSE 0 END, lastReadTime ASC")
+    @Query("SELECT * FROM volumes WHERE seriesId = :seriesId ORDER BY CASE WHEN history_time IS NULL THEN 1 ELSE 0 END, history_time ASC")
     fun getVolumesStreamFromSeriesInLastReadTimeOrder(seriesId: Long): PagingSource<Int, Volume>
 
-    @Query("SELECT * FROM volumes WHERE seriesId = :seriesId ORDER BY CASE WHEN lastReadTime IS NULL THEN 1 ELSE 0 END, lastReadTime DESC")
+    @Query("SELECT * FROM volumes WHERE seriesId = :seriesId ORDER BY CASE WHEN history_time IS NULL THEN 1 ELSE 0 END, history_time DESC")
     fun getVolumesStreamFromSeriesInLastReadTimeOrderDesc(seriesId: Long): PagingSource<Int, Volume>
 
     // --- 书签相关的 Volume 查询 ---
@@ -298,7 +298,7 @@ interface VolumeDao {
         """
         SELECT * FROM volumes 
         INNER JOIN bookmarks ON volumes.id = bookmarks.volumeId 
-        ORDER BY volumes.volumeName ASC, bookmarks.pageNumber ASC
+        ORDER BY volumes.volumeName ASC, bookmarks.pos_pageIndex ASC
     """
     )
     fun getVolumesWithBookmarksSortedByName(): Flow<Map<Volume, List<Bookmark>>>
@@ -311,7 +311,7 @@ interface VolumeDao {
         """
         SELECT * FROM volumes 
         INNER JOIN bookmarks ON volumes.id = bookmarks.volumeId 
-        ORDER BY volumes.lastReadTime DESC, bookmarks.pageNumber ASC
+        ORDER BY volumes.history_time DESC, bookmarks.pos_pageIndex ASC
     """
     )
     fun getVolumesWithBookmarksSortedByLastRead(): Flow<Map<Volume, List<Bookmark>>>
@@ -324,7 +324,7 @@ interface VolumeDao {
         """
         SELECT * FROM volumes 
         INNER JOIN bookmarks ON volumes.id = bookmarks.volumeId 
-        ORDER BY volumes.createTime DESC, bookmarks.pageNumber ASC
+        ORDER BY volumes.createTime DESC, bookmarks.pos_pageIndex ASC
     """
     )
     fun getVolumesWithBookmarksSortedByCreateTime(): Flow<Map<Volume, List<Bookmark>>>
@@ -337,7 +337,7 @@ interface VolumeDao {
         """
         SELECT * FROM volumes 
         INNER JOIN bookmarks ON volumes.id = bookmarks.volumeId 
-        ORDER BY (SELECT MAX(addTime) FROM bookmarks WHERE volumeId = volumes.id) DESC, bookmarks.pageNumber ASC
+        ORDER BY (SELECT MAX(pos_pageIndex) FROM bookmarks WHERE volumeId = volumes.id) DESC, bookmarks.pos_pageIndex ASC
     """
     )
     fun getVolumesWithBookmarksSortedByLatestBookmark(): Flow<Map<Volume, List<Bookmark>>>
@@ -357,7 +357,7 @@ interface BookmarkDao {
     @Update
     suspend fun updateBookmark(bookmark: Bookmark)
 
-    @Query("SELECT * FROM bookmarks WHERE volumeId = :volumeId ORDER BY pageNumber ASC")
+    @Query("SELECT * FROM bookmarks WHERE volumeId = :volumeId ORDER BY pos_pageIndex ASC")
     fun getBookmarksByVolumeId(volumeId: Long): Flow<List<Bookmark>>
 
     @Query("SELECT * FROM bookmarks WHERE id = :bookmarkId")

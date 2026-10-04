@@ -81,7 +81,7 @@
     <!-- HistoryScreen -->
     <string name="history_top_bar_display_unread_books">未読書籍を表示</string>
     <string name="history_top_bar_clear_history">すべての閲覧履歴をクリア</string>
-    <string name="history_item_pages">%1$d / %2$d ページ</string>
+    <string name="history_item_pages">%1$s / %2$s ページ</string>
     <string name="history_item_delete">この履歴を削除</string>
     <string name="history_item_never_read">一度も読んでいません</string>
     <string name="history_unread_books">未読書籍：</string>
@@ -168,7 +168,7 @@
     <string name="color_picker_navigation">戻る</string>
     <string name="color_picker_standard">標準カラー</string>
     <string name="color_picker_custom">カスタムカラー</string>
-    <string name="color_picker_opacity">不透明度</string>
+    <string name="color_picker_alpha">不透明度</string>
     <string name="color_picker_placer_holder">例：#FFFFFF</string>
     <string name="color_picker_label">16進数カラーコード</string>
     <string name="color_picker_error">無効な16進数形式です</string>

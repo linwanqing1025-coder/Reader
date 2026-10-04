@@ -1,7 +1,8 @@
-package io.lin.reader.ui.maintab.setting.details
+package io.lin.reader.ui.screens.setting.details
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -20,7 +21,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.VerticalPager
@@ -31,6 +34,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberSliderState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -46,10 +50,11 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.lin.reader.R
 import io.lin.reader.data.preferences.PageAlignment
+import io.lin.reader.data.preferences.ReaderPreferencesForTest
 import io.lin.reader.data.preferences.ReaderPreferencesInterface
 import io.lin.reader.data.preferences.ReadingMode
 import io.lin.reader.ui.components.screenbar.DynamicTopAppBar
-import io.lin.reader.ui.maintab.setting.SettingList
+import io.lin.reader.ui.screens.setting.SettingList
 import io.lin.reader.ui.theme.ReaderTheme
 import io.lin.reader.ui.components.selection.SelectableBox
 
@@ -89,7 +94,7 @@ fun ReadingModeDetailsScreen(
 fun ReadingModeDetails(
     modifier: Modifier = Modifier,
     readerPreferences: ReaderPreferencesInterface,
-    listState: androidx.compose.foundation.lazy.LazyListState = rememberLazyListState()
+    listState: LazyListState = rememberLazyListState()
 ) {
     fun isSelected(mode: ReadingMode, alignment: PageAlignment): Boolean {
         return readerPreferences.readingMode == mode && readerPreferences.pageAlignment == alignment
@@ -105,7 +110,7 @@ fun ReadingModeDetails(
         // 已完成的重构
         item {
             SettingList(
-                title = { Text(stringResource(R.string.reading_mode_label_padding))}
+                title = { Text(stringResource(R.string.reading_mode_label_padding)) }
             ) {
                 Column(
                     modifier = Modifier.padding(dimensionResource(R.dimen.inner_padding_of_container))
@@ -116,86 +121,52 @@ fun ReadingModeDetails(
                         color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.align(Alignment.End)
                     )
-                    Slider(
+                    val sliderState = rememberSliderState(
                         value = readerPreferences.pagePaddingRatio,
-                        onValueChange = { readerPreferences.updatePagePaddingRatio(it) },
-                        valueRange = 0f..0.2f,
-                        steps = 9,
-                        colors = SliderDefaults.colors(
-                            thumbColor = MaterialTheme.colorScheme.primary,
-                            activeTrackColor = MaterialTheme.colorScheme.primary,
-                            inactiveTrackColor = MaterialTheme.colorScheme.secondaryContainer,
-                            activeTickColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.5f),
-                            inactiveTickColor = MaterialTheme.colorScheme.onSecondaryContainer.copy(
-                                alpha = 0.5f
-                            )
-                        )
+                        steps = 9, trackRange = 0f..0.2f
+                    )
+                    Slider(
+                        state = sliderState,
+                        modifier = Modifier,
+                        enabled = true,
+                        onValueChange = {
+                            readerPreferences.updatePagePaddingRatio(it)
+                            sliderState.value = it
+                        },
+                        onValueChangeFinished = null,
+                        interactionSource = remember { MutableInteractionSource() }
                     )
                 }
             }
         }
 
-        // TODO: To be refactored
-        
-        item {
+        items(ReadingMode.entries, key = { it.name }) { mode ->
             ReadingModeSection(
-                title = stringResource(R.string.reading_mode_label_single),
+                title = stringResource(mode.displayName),
                 onVerticalClick = {
-                    readerPreferences.updateReadingMode(ReadingMode.Single)
+                    readerPreferences.updateReadingMode(mode)
                     readerPreferences.updatePageAlignment(PageAlignment.Vertical)
                 },
                 onHorizontalClick = {
-                    readerPreferences.updateReadingMode(ReadingMode.Single)
+                    readerPreferences.updateReadingMode(mode)
                     readerPreferences.updatePageAlignment(PageAlignment.Horizontal)
                 },
-                isVerticalSelected = isSelected(ReadingMode.Single, PageAlignment.Vertical),
-                isHorizontalSelected = isSelected(
-                    ReadingMode.Single,
-                    PageAlignment.Horizontal
-                ),
-                verticalContent = { VerticalSinglePage() },
-                horizontalContent = { HorizontalSinglePage() }
-            )
-        }
-
-        item {
-            ReadingModeSection(
-                title = stringResource(R.string.reading_mode_label_dual),
-                onVerticalClick = {
-                    readerPreferences.updateReadingMode(ReadingMode.Dual)
-                    readerPreferences.updatePageAlignment(PageAlignment.Vertical)
+                isVerticalSelected = isSelected(mode, PageAlignment.Vertical),
+                isHorizontalSelected = isSelected(mode, PageAlignment.Horizontal),
+                verticalContent = {
+                    when (mode) {
+                        ReadingMode.Single -> VerticalSinglePage()
+                        ReadingMode.Dual -> VerticalDualPage(pagePaddingRatio = readerPreferences.pagePaddingRatio)
+                        ReadingMode.Scroll -> VerticalScrollablePage(pagePaddingRatio = readerPreferences.pagePaddingRatio)
+                    }
                 },
-                onHorizontalClick = {
-                    readerPreferences.updateReadingMode(ReadingMode.Dual)
-                    readerPreferences.updatePageAlignment(PageAlignment.Horizontal)
-                },
-                isVerticalSelected = isSelected(ReadingMode.Dual, PageAlignment.Vertical),
-                isHorizontalSelected = isSelected(
-                    ReadingMode.Dual,
-                    PageAlignment.Horizontal
-                ),
-                verticalContent = { VerticalDualPage(pagePaddingRatio = readerPreferences.pagePaddingRatio) },
-                horizontalContent = { HorizontalDualPage(pagePaddingRatio = readerPreferences.pagePaddingRatio) },
-            )
-        }
-        item {
-            ReadingModeSection(
-                title = stringResource(R.string.reading_mode_label_scrollable),
-                onVerticalClick = {
-                    readerPreferences.updateReadingMode(ReadingMode.Scroll)
-                    readerPreferences.updatePageAlignment(PageAlignment.Vertical)
-                },
-                onHorizontalClick = {
-                    readerPreferences.updateReadingMode(ReadingMode.Scroll)
-                    readerPreferences.updatePageAlignment(PageAlignment.Horizontal)
-                },
-                isVerticalSelected = isSelected(ReadingMode.Scroll, PageAlignment.Vertical),
-                isHorizontalSelected = isSelected(
-                    ReadingMode.Scroll,
-                    PageAlignment.Horizontal
-                ),
-                verticalContent = { VerticalScrollablePage(pagePaddingRatio = readerPreferences.pagePaddingRatio) },
-                horizontalContent = { HorizontalScrollablePage(pagePaddingRatio = readerPreferences.pagePaddingRatio) }
+                horizontalContent = {
+                    when (mode) {
+                        ReadingMode.Single -> HorizontalSinglePage()
+                        ReadingMode.Dual -> HorizontalDualPage(pagePaddingRatio = readerPreferences.pagePaddingRatio)
+                        ReadingMode.Scroll -> HorizontalScrollablePage(pagePaddingRatio = readerPreferences.pagePaddingRatio)
+                    }
+                }
             )
         }
     }
@@ -236,7 +207,7 @@ private fun ReadingModeSection(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = stringResource(R.string.page_alignment_vertical),
+                    text = stringResource(PageAlignment.Vertical.displayName),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurface,
                     fontWeight = if (isVerticalSelected) FontWeight.Bold else FontWeight.Normal
@@ -257,7 +228,7 @@ private fun ReadingModeSection(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = stringResource(R.string.page_alignment_horizontal),
+                    text = stringResource(PageAlignment.Horizontal.displayName),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurface,
                     fontWeight = if (isHorizontalSelected) FontWeight.Bold else FontWeight.Normal
@@ -282,7 +253,13 @@ private fun ClickableContainer(
         shape = RoundedCornerShape(radius)
     ) {
         BoxWithConstraints(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(
+                    width = 1.dp,
+                    color = MaterialTheme.colorScheme.onSurface.copy(0.5f),
+                    shape = RoundedCornerShape(radius)
+                ),
             contentAlignment = Alignment.Center
         ) {
             val maxHeight = maxWidth * 1.4f
@@ -527,7 +504,7 @@ private fun HorizontalScrollablePage(
 private fun ReadingModeDetailsScreenPreview() {
     ReaderTheme {
         ReadingModeDetailsScreen(
-            readerPreferences = io.lin.reader.data.preferences.ReaderPreferencesForTest()
+            readerPreferences = ReaderPreferencesForTest()
         )
     }
 }

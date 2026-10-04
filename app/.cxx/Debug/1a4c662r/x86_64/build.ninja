@@ -53,7 +53,7 @@ build CMakeFiles/reader_opencv.dir/reader_jni.cpp.o: CXX_COMPILER__reader_opencv
   DEFINES = -Dreader_opencv_EXPORTS
   DEP_FILE = CMakeFiles\reader_opencv.dir\reader_jni.cpp.o.d
   FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security   -fno-limit-debug-info  -fPIC -std=gnu++17
-  INCLUDES = -isystem D:/Luo/Developer/JDK/caches/9.7.0/transforms/7ec220c9e420fc5271ef60e6d124b341/transformed/opencv-5.0.0.1/prefab/modules/opencv_java5/include
+  INCLUDES = -isystem C:/Users/Luo/.gradle/caches/9.7.0/transforms/7ec220c9e420fc5271ef60e6d124b341/transformed/opencv-5.0.0.1/prefab/modules/opencv_java5/include
   OBJECT_DIR = CMakeFiles\reader_opencv.dir
   OBJECT_FILE_DIR = CMakeFiles\reader_opencv.dir
 
@@ -65,10 +65,10 @@ build CMakeFiles/reader_opencv.dir/reader_jni.cpp.o: CXX_COMPILER__reader_opencv
 #############################################
 # Link the shared library D:\Luo\Developer\Android\MyProject\Reader\app\build\intermediates\cxx\Debug\1a4c662r\obj\x86_64\libreader_opencv.so
 
-build D$:/Luo/Developer/Android/MyProject/Reader/app/build/intermediates/cxx/Debug/1a4c662r/obj/x86_64/libreader_opencv.so: CXX_SHARED_LIBRARY_LINKER__reader_opencv_Debug CMakeFiles/reader_opencv.dir/reader_jni.cpp.o | D$:/Luo/Developer/JDK/caches/9.7.0/transforms/7ec220c9e420fc5271ef60e6d124b341/transformed/opencv-5.0.0.1/prefab/modules/opencv_java5/libs/android.x86_64/libopencv_java5.so
+build D$:/Luo/Developer/Android/MyProject/Reader/app/build/intermediates/cxx/Debug/1a4c662r/obj/x86_64/libreader_opencv.so: CXX_SHARED_LIBRARY_LINKER__reader_opencv_Debug CMakeFiles/reader_opencv.dir/reader_jni.cpp.o | C$:/Users/Luo/.gradle/caches/9.7.0/transforms/7ec220c9e420fc5271ef60e6d124b341/transformed/opencv-5.0.0.1/prefab/modules/opencv_java5/libs/android.x86_64/libopencv_java5.so
   LANGUAGE_COMPILE_FLAGS = -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security   -fno-limit-debug-info
   LINK_FLAGS = -Wl,--build-id=sha1 -Wl,--no-undefined-version -Wl,--fatal-warnings -Wl,--no-undefined -Qunused-arguments
-  LINK_LIBRARIES = D:/Luo/Developer/JDK/caches/9.7.0/transforms/7ec220c9e420fc5271ef60e6d124b341/transformed/opencv-5.0.0.1/prefab/modules/opencv_java5/libs/android.x86_64/libopencv_java5.so  -ljnigraphics  -llog  -latomic -lm
+  LINK_LIBRARIES = C:/Users/Luo/.gradle/caches/9.7.0/transforms/7ec220c9e420fc5271ef60e6d124b341/transformed/opencv-5.0.0.1/prefab/modules/opencv_java5/libs/android.x86_64/libopencv_java5.so  -ljnigraphics  -llog  -latomic -lm
   OBJECT_DIR = CMakeFiles\reader_opencv.dir
   POST_BUILD = cd .
   PRE_LINK = cd .

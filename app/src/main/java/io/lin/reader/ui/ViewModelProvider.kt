@@ -6,11 +6,11 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import io.lin.reader.ReaderApplication
-import io.lin.reader.ui.maintab.bookmark.BookmarkScreenViewModel
-import io.lin.reader.ui.maintab.favourite.FavouriteScreenViewModel
-import io.lin.reader.ui.maintab.history.HistoryScreenViewModel
-import io.lin.reader.ui.maintab.reading.ReadingScreenViewModel
-import io.lin.reader.ui.maintab.setting.SettingScreenViewModel
+import io.lin.reader.ui.screens.bookmark.BookmarkScreenViewModel
+import io.lin.reader.ui.screens.favourite.FavouriteScreenViewModel
+import io.lin.reader.ui.screens.history.HistoryScreenViewModel
+import io.lin.reader.ui.screens.reading.ReadingScreenViewModel
+import io.lin.reader.ui.screens.setting.SettingScreenViewModel
 import io.lin.reader.ui.screens.shelf.SeriesDetailScreenViewModel
 import io.lin.reader.ui.screens.shelf.ShelfScreenViewModel
 import androidx.lifecycle.createSavedStateHandle

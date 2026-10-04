@@ -1,4 +1,4 @@
-package io.lin.reader.ui.maintab.setting.details
+package io.lin.reader.ui.screens.setting.details
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -35,21 +35,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import io.lin.reader.R
+import io.lin.reader.data.preferences.CropMode
 import io.lin.reader.data.preferences.ReaderPreferencesForTest
 import io.lin.reader.data.preferences.ReaderPreferencesInterface
-import io.lin.reader.ui.components.menu.StyledMenu
-import io.lin.reader.ui.components.menu.StyledMenuItem
+import io.lin.reader.ui.components.menu.StyledDropdownMenu
+import io.lin.reader.ui.components.menu.StyledDropdownMenuItem
 import io.lin.reader.ui.components.screenbar.DynamicTopAppBar
-import io.lin.reader.ui.maintab.setting.SettingList
-import io.lin.reader.ui.maintab.setting.SettingListItem
+import io.lin.reader.ui.screens.setting.SettingList
+import io.lin.reader.ui.screens.setting.SettingListItem
 import io.lin.reader.ui.theme.ReaderTheme
 
-enum class CropMode {
-    None,           // 不裁剪
-    Horizontal,     // 仅左右 (消除书沟)
-    Vertical,       // 仅上下 (去除页眉页脚)
-    All             // 四周全部裁剪 (自动切边)
-}
 
 @Composable
 fun OtherReadingSettingDetailsScreen(
@@ -145,13 +140,13 @@ fun OtherReadingSettingDetails(
                     }
                     // 裁剪选择菜单
                     Box {
-                        StyledMenu(
+                        StyledDropdownMenu(
                             expanded = expanded,
                             onDismissRequest = { expanded = false },
                         ) {
-                            CropMode.entries.forEach { it ->
-                                StyledMenuItem(
-                                    text = it.name,
+                            CropMode.entries.forEach {
+                                StyledDropdownMenuItem(
+                                    text = { Text(stringResource(it.displayName)) },
                                     onClick = {
                                         readerPreferences.updateCropMode(it)
                                         expanded = false
@@ -160,8 +155,7 @@ fun OtherReadingSettingDetails(
                                         {
                                             Icon(
                                                 Icons.Default.Check,
-                                                contentDescription = null,
-                                                tint = MaterialTheme.colorScheme.primary
+                                                contentDescription = null
                                             )
                                         }
                                     } else null

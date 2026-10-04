@@ -1,10 +1,12 @@
 package io.lin.reader.data.preferences
 
 import android.util.Log
+import androidx.annotation.StringRes
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.datastore.preferences.core.edit
+import io.lin.reader.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -13,11 +15,13 @@ private const val TAG = "BookmarkPreferences.kt"
 /**
  * 书签页面的书籍排序方式
  */
-enum class BookmarkSortMethod {
-    VolumeName,         // 按 Volume 名称
-    LastReadTime,       // 按 Volume 上次阅读时间
-    VolumeCreateTime,   // 按 Volume 创建时间
-    LatestBookmarkTime  // 按最新书签的添加时间
+enum class BookmarkSortMethod(
+    @StringRes val displayName: Int
+) {
+    VolumeName(R.string.bookmark_sort_volume_name),         // 按 Volume 名称
+    LastReadTime(R.string.bookmark_sort_last_read_time),       // 按 Volume 上次阅读时间
+    VolumeCreateTime(R.string.bookmark_sort_volume_create_time),   // 按 Volume 创建时间
+    LatestBookmarkTime(R.string.bookmark_sort_latest_bookmark_time)  // 按最新书签的添加时间
 }
 
 interface BookmarkPreferencesInterface {

@@ -22,7 +22,7 @@
       "abi": "x86_64",
       "output": "D:\\Luo\\Developer\\Android\\MyProject\\Reader\\app\\build\\intermediates\\cxx\\Debug\\1a4c662r\\obj\\x86_64\\libreader_opencv.so",
       "runtimeFiles": [
-        "D:\\Luo\\Developer\\JDK\\caches\\9.7.0\\transforms\\7ec220c9e420fc5271ef60e6d124b341\\transformed\\opencv-5.0.0.1\\prefab\\modules\\opencv_java5\\libs\\android.x86_64\\libopencv_java5.so"
+        "C:\\Users\\Luo\\.gradle\\caches\\9.7.0\\transforms\\7ec220c9e420fc5271ef60e6d124b341\\transformed\\opencv-5.0.0.1\\prefab\\modules\\opencv_java5\\libs\\android.x86_64\\libopencv_java5.so"
       ]
     }
   }

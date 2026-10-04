@@ -10,11 +10,14 @@ import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -38,20 +41,23 @@ import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.liveRegion
@@ -61,7 +67,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.zIndex
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
@@ -74,10 +79,18 @@ fun FloatingNavigationBar(
     isRootPage: Boolean,
     currentKey: NavKey?,
     navigationItemsList: List<NavigationItems>,
+    navigationLabel: Boolean = true,
     onNavigate: (NavKey) -> Boolean,
 ) {
     // 存储 navigationItemsList 的导航项位置
     val itemPositions = remember { mutableStateMapOf<NavKey, Rect>() }
+
+    // 锁定一个稳定的目标区域，防止切换瞬间 Rect.Zero 导致动画中断
+    var activeRect by remember { mutableStateOf(Rect.Zero) }
+    val currentTargetRect = itemPositions[currentKey]
+    if (currentTargetRect != null && currentTargetRect != Rect.Zero) {
+        activeRect = currentTargetRect
+    }
 
     // 处理退场动画：如果不在根页面，则强制触发 scrollBehavior 的隐藏位移
     LaunchedEffect(isRootPage) {
@@ -98,54 +111,92 @@ fun FloatingNavigationBar(
         }
     }
 
-    // The toolbar should receive focus before the screen content, so place it first.
-    // Make sure to set its zIndex so it's above the screen content visually.
     HorizontalFloatingToolbar(
         modifier = modifier
-            .height(64.dp)
+            .height(
+                if (navigationLabel) 84.dp
+                else 64.dp
+            )
             .offset(y = -ScreenOffset),
         expanded = true,
         content = {
-            FancyRowIndicator(
-                targetRect = itemPositions[currentKey] ?: Rect.Zero,
-            )
-            navigationItemsList.forEachIndexed { index, item ->
-                val itemDescription = stringResource(item.contentDescription)
-                Box(
-                    modifier = Modifier
-                        .width(58.dp)
-                        .onGloballyPositioned { coords ->
-                            val rect = Rect(
-                                coords.positionInParent(),
-                                coords.size.toSize()
-                            )
-                            itemPositions[item.key] = rect
-                        },
-                    contentAlignment = Alignment.Center
-                ) {
-                    TooltipBox(
-                        positionProvider =
-                            TooltipDefaults.rememberTooltipPositionProvider(
-                                TooltipAnchorPosition.Above
-                            ),
-                        tooltip = {
-                            PlainTooltip(
-                                modifier =
-                                    Modifier.semantics {
-                                        liveRegion = LiveRegionMode.Assertive
-                                        paneTitle = itemDescription
-                                    }
-                            ) {
-                                Text(itemDescription)
-                            }
-                        },
-                        state = rememberTooltipState(),
+            // 记住 Row 的坐标系
+            var rowCoordinates by remember {
+                mutableStateOf<LayoutCoordinates?>(
+                    null
+                )
+            }
+            Row(
+                modifier = Modifier
+                    .padding(
+                        horizontal =
+                            if (navigationLabel) 6.dp
+                            else 0.dp
+                    )
+                    .onGloballyPositioned { rowCoordinates = it },
+                horizontalArrangement =
+                    if (navigationLabel) Arrangement.spacedBy(2.dp)
+                    else Arrangement.Center
+            ) {
+                if (activeRect != Rect.Zero) {
+                    FancyNavBarIndicator(
+                        navBarActive = isRootPage,
+                        targetRect = activeRect
+                    )
+                }
+                navigationItemsList.forEach { item ->
+                    val itemDescription = stringResource(item.contentDescription)
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
                     ) {
-                        IconButton(
-                            onClick = { onNavigate(item.key) },
-                            modifier = Modifier.fillMaxSize()
+                        Box(
+                            modifier = Modifier
+                                .width(58.dp)
+                                .onGloballyPositioned { boxCoords ->
+                                    // 让 Row 直接计算出 Box 相对于 Row 的 Rect
+                                    rowCoordinates?.let { rowCoords ->
+                                        if (rowCoords.isAttached && boxCoords.isAttached) {
+                                            itemPositions[item.key] =
+                                                rowCoords.localBoundingBoxOf(boxCoords)
+                                        }
+                                    }
+                                },
+                            contentAlignment = Alignment.Center
                         ) {
-                            Icon(item.icon, contentDescription = itemDescription)
+                            TooltipBox(
+                                positionProvider =
+                                    TooltipDefaults.rememberTooltipPositionProvider(
+                                        TooltipAnchorPosition.Above
+                                    ),
+                                tooltip = {
+                                    PlainTooltip(
+                                        modifier =
+                                            Modifier.semantics {
+                                                liveRegion = LiveRegionMode.Assertive
+                                                paneTitle = itemDescription
+                                            }
+                                    ) {
+                                        Text(itemDescription)
+                                    }
+                                },
+                                state = rememberTooltipState(),
+                            ) {
+                                IconButton(
+                                    onClick = { onNavigate(item.key) },
+                                    modifier = Modifier.size(48.dp)
+                                ) {
+                                    Icon(item.icon, contentDescription = itemDescription)
+                                }
+                            }
+                        }
+                        if (navigationLabel) {
+                            Text(
+                                modifier = Modifier.padding(top = 2.dp),
+                                text = stringResource(item.label),
+                                style = MaterialTheme.typography.labelSmall,
+                                maxLines = 1
+                            )
                         }
                     }
                 }
@@ -156,18 +207,27 @@ fun FloatingNavigationBar(
 }
 
 @Composable
-fun FancyRowIndicator(
+private fun FancyNavBarIndicator(
+    navBarActive: Boolean,
     targetRect: Rect,
     color: Color = MaterialTheme.colorScheme.primaryContainer
 ) {
     val startAnim = remember { Animatable(targetRect.left) }
     val endAnim = remember { Animatable(targetRect.right) }
 
+    // 记录上一帧的
+    // 显示状态，用于判断是否是“刚从隐藏状态变为显示”
+    var wasRootPage by remember { mutableStateOf(navBarActive) }
+
     LaunchedEffect(targetRect.left, targetRect.right) {
         val newStart = targetRect.left
         val newEnd = targetRect.right
 
-        if (endAnim.targetValue != newEnd) {
+        // 如果之前处于隐藏状态，或者当前正在隐藏状态中，直接定位，不要动画
+        if (!wasRootPage || !navBarActive) {
+            startAnim.snapTo(newStart)
+            endAnim.snapTo(newEnd)
+        } else {
             launch {
                 endAnim.animateTo(
                     newEnd,
@@ -177,8 +237,6 @@ fun FancyRowIndicator(
                     )
                 )
             }
-        }
-        if (startAnim.targetValue != newStart) {
             launch {
                 startAnim.animateTo(
                     newStart,
@@ -189,6 +247,8 @@ fun FancyRowIndicator(
                 )
             }
         }
+        // 更新历史状态
+        wasRootPage = navBarActive
     }
 
     val indicatorStart = startAnim.value
@@ -240,6 +300,9 @@ private fun FloatingNavigationBarPreview() {
         it.key == currentKey
     }
 
+    var navigationLabel by remember { mutableStateOf(true) }
+    val toggleNavigationLabel = { navigationLabel = !navigationLabel }
+
     val scrollModifier =
         if (isRootPage) Modifier.nestedScroll(navigationBarScrollBehavior)
         else Modifier
@@ -262,6 +325,7 @@ private fun FloatingNavigationBarPreview() {
                     isRootPage = isRootPage,
                     currentKey = currentKey,
                     navigationItemsList = NavigationItems.entries,
+                    navigationLabel = navigationLabel,
                     onNavigate = onNavigate
                 )
 
@@ -272,9 +336,8 @@ private fun FloatingNavigationBarPreview() {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     item {
-                        val current = backStack.lastOrNull()
                         Text(
-                            text = current?.toString() ?: "Empty",
+                            text = currentKey?.toString() ?: "Empty",
                             textAlign = TextAlign.Center,
                             style = MaterialTheme.typography.bodyLarge,
                             modifier = Modifier
@@ -288,6 +351,9 @@ private fun FloatingNavigationBarPreview() {
                         }
                         Button(onClick = { backToTab() }) {
                             Text(text = "Navigate back to tab screen")
+                        }
+                        Button(onClick = toggleNavigationLabel) {
+                            Text(text = "Toggle Showing Navigation Label")
                         }
                     }
                     item {

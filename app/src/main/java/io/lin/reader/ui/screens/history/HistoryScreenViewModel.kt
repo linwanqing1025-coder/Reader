@@ -1,4 +1,4 @@
-package io.lin.reader.ui.maintab.history
+package io.lin.reader.ui.screens.history
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -26,7 +26,7 @@ class HistoryScreenViewModel(
             .cachedIn(viewModelScope)
 
     fun clearHistoryInSingleVolume(volume: Volume) {
-        val newVolume = volume.copy(lastReadTime = null, lastReadPage = 0)
+        val newVolume = volume.copy(history = null)
         viewModelScope.launch {
             booksRepository.updateVolume(newVolume)
         }

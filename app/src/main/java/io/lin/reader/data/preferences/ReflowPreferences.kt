@@ -1,6 +1,5 @@
 package io.lin.reader.data.preferences
 
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -9,7 +8,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.datastore.preferences.core.edit
-import io.lin.reader.mupdf.font.PRESET_FONTS
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -53,7 +51,6 @@ interface ReflowPreferencesInterface {
     fun updateTextIndent(value: Float)
     fun updateParagraphSpacing(value: Float)
     fun toggleHyphenation()
-    fun generateCss(): String
 }
 
 data class ReflowPreferences(
@@ -269,56 +266,6 @@ data class ReflowPreferences(
             }
         }
     }
-
-    // TODO: 验证 bundled 字体加载是否成功
-    override fun generateCss(): String {
-        val textColorHex = String.format("#%06X", 0xFFFFFF and textColor)
-        val bgColorHex = String.format("#%06X", 0xFFFFFF and backgroundColor)
-
-        // 字体信息
-        val fontInfo = PRESET_FONTS.firstOrNull { it.family == fontFamily }
-        val fontFace = fontInfo?.cssFontFace() ?: ""// TODO: 非项目内置字体
-        val fontWeight = if (fontBold) "bold" else "normal"
-        val fontStyle = if (fontItalic) "italic" else "normal"
-
-        val res = """  
-            $fontFace  
-        
-            html, body {  
-                margin: 0 !important;  
-                padding: 0 !important;  
-                background-color: $bgColorHex;  
-            }  
-            @page {  
-                margin: 0 !important;  
-            }  
-            * {  
-                font-family: "$fontFamily" !important;  
-            }  
-            body {  
-                font-weight: $fontWeight;  
-                font-style: $fontStyle;  
-                line-height: $lineHeight;  
-                color: $textColorHex;  
-                text-align: $textAlign;  
-                text-indent: ${textIndent}pt;  
-                margin: ${verticalMargin}pt ${horizontalMargin}pt !important;  
-                padding: ${verticalPadding}pt ${horizontalPadding}pt !important;  
-                hyphens: ${if (hyphenation) "auto" else "none"};  
-            }  
-            ul, ol {  
-                list-style-type: $listStyleType;  
-                list-style-position: $listStylePosition;  
-            }  
-            p {  
-                margin-top: 0;  
-                margin-bottom: ${paragraphSpacing}pt;  
-            }  
-            """.trimIndent()
-
-        Log.d("FontCheck", "css: $res")
-        return res
-    }
 }
 
 class ReflowPreferencesForTest : ReflowPreferencesInterface {
@@ -361,5 +308,4 @@ class ReflowPreferencesForTest : ReflowPreferencesInterface {
     override fun updateTextIndent(value: Float) {}
     override fun updateParagraphSpacing(value: Float) {}
     override fun toggleHyphenation() {}
-    override fun generateCss(): String = ""
 }

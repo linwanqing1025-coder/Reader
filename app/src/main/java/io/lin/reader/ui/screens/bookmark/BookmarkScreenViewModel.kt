@@ -1,4 +1,4 @@
-package io.lin.reader.ui.maintab.bookmark
+package io.lin.reader.ui.screens.bookmark
 
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel

@@ -1,26 +1,24 @@
 package io.lin.reader.utils
 
-import android.content.ContentResolver
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.provider.OpenableColumns
 import android.util.Log
-import android.webkit.MimeTypeMap
 import androidx.annotation.WorkerThread
+import androidx.core.graphics.createBitmap
 import com.artifex.mupdf.fitz.Archive
 import com.artifex.mupdf.fitz.Document
 import com.artifex.mupdf.viewer.ContentInputStream
 import com.artifex.mupdf.viewer.MuPDFCore
+import io.lin.reader.mupdf.core.MuPDFCoreFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
-import java.util.UUID
-import androidx.core.graphics.createBitmap
-import io.lin.reader.utils.FileUtils.getMimeType
 import java.lang.reflect.Field
+import java.util.UUID
 
 /**
  * 文档工具类：使用 MuPDFCore 支持多种文档格式（PDF, EPUB, XPS, CBZ 等）
@@ -32,78 +30,16 @@ object MuPDFUtils {
     private const val A4_ASPECT_RATIO = 1.4
 
     /**
-     * 辅助方法：从 Uri 初始化 MuPDFCore。
-     * 逻辑参考自 ReadingScreenViewModel.kt
-     */
-    private fun openCore(context: Context, uri: Uri): MuPDFCore? {
-        val cr = context.contentResolver
-        var fileSize: Long = -1
-        val mimeType = getMimeType(context, uri) ?: "application/pdf"
-
-        try {
-            cr.query(uri, arrayOf(OpenableColumns.SIZE), null, null, null)?.use { cursor ->
-                if (cursor.moveToFirst()) {
-                    val sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE)
-                    if (sizeIndex >= 0 && !cursor.isNull(sizeIndex)) {
-                        fileSize = cursor.getLong(sizeIndex)
-                    }
-                }
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error querying URI metadata: $e")
-        }
-
-        if (fileSize == 0L) fileSize = -1
-
-        var buf: ByteArray? = null
-        try {
-            val limit = 8 * 1024 * 1024
-            val inputStream = cr.openInputStream(uri)
-            if (fileSize < 0) {
-                inputStream?.use { isStream ->
-                    val tempBuf = ByteArray(limit)
-                    val used = isStream.read(tempBuf)
-                    val atEOF = isStream.read() == -1
-                    if (used >= 0 && (used < limit || atEOF)) {
-                        buf = if (tempBuf.size == used) tempBuf else tempBuf.copyOf(used)
-                    }
-                }
-            } else if (fileSize <= limit) {
-                inputStream?.use { isStream ->
-                    val tempBuf = ByteArray(fileSize.toInt())
-                    val used = isStream.read(tempBuf)
-                    if (used >= 0 && used == fileSize.toInt()) {
-                        buf = tempBuf
-                    }
-                }
-            } else {
-                inputStream?.close() // 不在内存加载，后续使用 stream
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error reading core buffer: $e")
-        }
-
-        return try {
-            if (buf != null) {
-                MuPDFCore(buf, mimeType)
-            } else {
-                MuPDFCore(ContentInputStream(cr, uri, fileSize), mimeType)
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to open MuPDFCore: $e")
-            null
-        }
-    }
-
-    /**
      * 获取文档的总页数。
+     * 对于重排文档（如 EPUB），由于总页数是随排版动态变化的，直接返回 null。
      */
     @WorkerThread
-    suspend fun getPageCount(context: Context, uri: Uri): Int = withContext(Dispatchers.IO) {
+    suspend fun getPageCount(context: Context, uri: Uri): Int? = withContext(Dispatchers.IO) {
         var core: MuPDFCore? = null
         try {
-            core = openCore(context, uri)
-            return@withContext core?.countPages() ?: 0
+            core = MuPDFCoreFactory.openCore(context, uri)
+            if (core == null) return@withContext 0
+            if (core.isReflowable) null else core.countPages()
         } catch (e: Exception) {
             Log.e(TAG, "Error getting page count: $e")
             0
@@ -260,7 +196,7 @@ object MuPDFUtils {
         var coverBitmap: Bitmap? = null
 
         try {
-            core = openCore(context, uri) ?: return@withContext null
+            core = MuPDFCoreFactory.openCore(context, uri) ?: return@withContext null
 
             // 一、对于原生重排文件（文档内没有页概念），尝试直接提取嵌入的封面文件，避免渲染文字
             if (core.isReflowable) {

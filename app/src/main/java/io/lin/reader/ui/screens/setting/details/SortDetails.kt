@@ -1,4 +1,4 @@
-package io.lin.reader.ui.maintab.setting.details
+package io.lin.reader.ui.screens.setting.details
 
 import  androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDownward
@@ -40,13 +41,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.lin.reader.R
+import io.lin.reader.data.preferences.BookmarkPreferencesForTest
 import io.lin.reader.data.preferences.BookmarkPreferencesInterface
 import io.lin.reader.data.preferences.BookmarkSortMethod
 import io.lin.reader.data.preferences.SeriesSortMethod
+import io.lin.reader.data.preferences.ShelfPreferencesForTest
 import io.lin.reader.data.preferences.ShelfPreferencesInterface
 import io.lin.reader.data.preferences.VolumeSortMethod
 import io.lin.reader.ui.components.screenbar.DynamicTopAppBar
-import io.lin.reader.ui.maintab.setting.SettingList
+import io.lin.reader.ui.screens.setting.SettingList
 import io.lin.reader.ui.theme.ReaderTheme
 
 @Composable
@@ -88,7 +91,7 @@ fun SortDetails(
     modifier: Modifier = Modifier,
     shelfPreferences: ShelfPreferencesInterface,
     bookmarkPreferences: BookmarkPreferencesInterface,
-    listState: androidx.compose.foundation.lazy.LazyListState = rememberLazyListState()
+    listState: LazyListState = rememberLazyListState()
 ) {
     LazyColumn(
         state = listState,
@@ -133,10 +136,7 @@ fun SortDetails(
                                         active = isSelected,
                                         activeContent = {
                                             Icon(
-                                                imageVector = when (method) {
-                                                    SeriesSortMethod.Name -> Icons.Default.SortByAlpha
-                                                    SeriesSortMethod.CreateTime -> Icons.Outlined.AddToPhotos
-                                                },
+                                                imageVector = method.icon,
                                                 contentDescription = null,
                                                 modifier = Modifier.size(14.dp)
                                             )
@@ -145,10 +145,7 @@ fun SortDetails(
                                 },
                                 label = {
                                     Text(
-                                        text = when (method) {
-                                            SeriesSortMethod.Name -> stringResource(R.string.series_sort_name)
-                                            SeriesSortMethod.CreateTime -> stringResource(R.string.series_sort_create_time)
-                                        },
+                                        text = stringResource(method.displayName),
                                         style = MaterialTheme.typography.labelSmall,
                                         fontWeight = FontWeight.Bold,
                                         textAlign = TextAlign.Center
@@ -255,11 +252,7 @@ fun SortDetails(
                                         active = isSelected,
                                         activeContent = {
                                             Icon(
-                                                imageVector = when (method) {
-                                                    VolumeSortMethod.Name -> Icons.Default.SortByAlpha
-                                                    VolumeSortMethod.CreateTime -> Icons.Outlined.AddToPhotos
-                                                    VolumeSortMethod.LastReadTime -> Icons.Default.History
-                                                },
+                                                imageVector = method.icon,
                                                 contentDescription = null,
                                                 modifier = Modifier.size(14.dp)
                                             )
@@ -268,11 +261,7 @@ fun SortDetails(
                                 },
                                 label = {
                                     Text(
-                                        text = when (method) {
-                                            VolumeSortMethod.Name -> stringResource(R.string.volume_sort_name)
-                                            VolumeSortMethod.CreateTime -> stringResource(R.string.volume_sort_create_time)
-                                            VolumeSortMethod.LastReadTime -> stringResource(R.string.volume_sort_last_read_time)
-                                        },
+                                        text = stringResource(method.displayName),
                                         style = MaterialTheme.typography.labelSmall,
                                         fontWeight = FontWeight.Bold,
                                         textAlign = TextAlign.Center
@@ -379,17 +368,7 @@ fun SortDetails(
                                 icon = {},
                                 label = {
                                     Text(
-                                        text = when (method) {
-                                            BookmarkSortMethod.VolumeName -> stringResource(R.string.bookmark_sort_volume_name)
-                                            BookmarkSortMethod.LastReadTime -> stringResource(R.string.bookmark_sort_last_read_time)
-                                            BookmarkSortMethod.VolumeCreateTime -> stringResource(
-                                                R.string.bookmark_sort_volume_create_time
-                                            )
-
-                                            BookmarkSortMethod.LatestBookmarkTime -> stringResource(
-                                                R.string.bookmark_sort_latest_bookmark_time
-                                            )
-                                        },
+                                        text = stringResource(method.displayName),
                                         style = MaterialTheme.typography.labelSmall,
                                         fontWeight = FontWeight.Bold,
                                         textAlign = TextAlign.Center,
@@ -410,8 +389,8 @@ fun SortDetails(
 private fun SortDetailsScreenPreview() {
     ReaderTheme {
         SortDetailsScreen(
-            shelfPreferences = io.lin.reader.data.preferences.ShelfPreferencesForTest(),
-            bookmarkPreferences = io.lin.reader.data.preferences.BookmarkPreferencesForTest()
+            shelfPreferences = ShelfPreferencesForTest(),
+            bookmarkPreferences = BookmarkPreferencesForTest()
         )
     }
 }

@@ -84,7 +84,7 @@
     <!-- HistoryScreen -->
     <string name="history_top_bar_display_unread_books">顯示未讀書籍</string>
     <string name="history_top_bar_clear_history">清空所有閱讀紀錄</string>
-    <string name="history_item_pages">%1$d / %2$d 頁</string>
+    <string name="history_item_pages">%1$s / %2$s 頁</string>
     <string name="history_item_delete">刪除此紀錄</string>
     <string name="history_item_never_read">從未閱讀</string>
     <string name="history_unread_books">未讀書籍：</string>
@@ -184,7 +184,7 @@
     <string name="color_picker_navigation">返回</string>
     <string name="color_picker_standard">標準色</string>
     <string name="color_picker_custom">自定義顏色</string>
-    <string name="color_picker_opacity">不透明度</string>
+    <string name="color_picker_alpha">不透明度</string>
     <string name="color_picker_placer_holder">例如：#FFFFFF</string>
     <string name="color_picker_label">十六進位顏色值</string>
     <string name="color_picker_error">無效的十六進位格式</string>

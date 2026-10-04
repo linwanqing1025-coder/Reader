@@ -1,4 +1,4 @@
-package io.lin.reader.ui.maintab.bookmark
+package io.lin.reader.ui.screens.bookmark
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
@@ -33,11 +33,13 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import io.lin.reader.data.database.ReadingHistory
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -62,6 +64,9 @@ import io.lin.reader.data.database.Bookmark
 import io.lin.reader.data.database.Volume
 import io.lin.reader.data.database.VolumeWithBookmarks
 import io.lin.reader.ui.components.cover.VolumeCover
+import androidx.compose.runtime.CompositionLocalProvider
+import io.lin.reader.ui.AppViewModelForTest
+import io.lin.reader.ui.LocalAppViewModel
 import io.lin.reader.ui.components.dialog.NotificationDialog
 import kotlinx.coroutines.launch
 import java.time.Instant
@@ -182,7 +187,7 @@ fun VolumeBookmarksGroup(
 private fun BookmarkItem(
     bookmark: Bookmark,
     volumeName: String,
-    totalPages: Int,
+    totalPages: Int?,
     onClick: () -> Unit,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
@@ -278,7 +283,9 @@ private fun BookmarkItem(
                         color = MaterialTheme.colorScheme.secondary,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.padding(start = 12.dp).weight(0.4f)
+                        modifier = Modifier
+                            .padding(start = 12.dp)
+                            .weight(0.4f)
                     )
                 }
 
@@ -290,7 +297,7 @@ private fun BookmarkItem(
                     val formatter = DateTimeFormatter.ofPattern("yyyy/M/d HH:mm")
                     val formattedTime = try {
                         LocalDateTime.ofInstant(
-                            Instant.ofEpochMilli(bookmark.addTime),
+                            Instant.ofEpochMilli(bookmark.history.time),
                             ZoneId.systemDefault()
                         ).format(formatter)
                     } catch (e: Exception) {
@@ -303,16 +310,42 @@ private fun BookmarkItem(
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
                     )
 
-                    Text(
-                        text = stringResource(
-                            R.string.bookmark_item_pages,
-                            bookmark.pageNumber,
-                            totalPages
-                        ),
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                    if (totalPages != null && totalPages > 0) {
+                        Text(
+                            text = stringResource(
+                                R.string.bookmark_item_pages,
+                                (bookmark.history.pageIndex ?: 0) + 1,
+                                totalPages
+                            ),
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    } else {
+                        // TODO: 显示书签进度、章节名
+                        val chapterInfo = bookmark.history.chapterInfo
+                        val readingProgress = bookmark.history.readProgress
+                        val progressStr = readingProgress.toString()
+                        Row(
+                            horizontalArrangement = Arrangement.End,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            CircularProgressIndicator(
+                                progress = { readingProgress },
+                                modifier = Modifier.size(12.dp),
+                                color = MaterialTheme.colorScheme.primary,
+                                strokeWidth = 2.dp,
+                                trackColor = MaterialTheme.colorScheme.primaryContainer
+                            )
+                            Spacer(Modifier.width(4.dp))
+                            Text(
+                                text = chapterInfo ?: progressStr,
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -322,8 +355,8 @@ private fun BookmarkItem(
         val notificationText = stringResource(
             R.string.bookmark_delete_item_notification,
             volumeName,
-            bookmark.pageNumber
-            )
+            bookmark.history.pageIndex?.let { "Page ${it + 1}" } ?: "未知页码"
+        )
         NotificationDialog(
             title = stringResource(R.string.bookmark_dialog_title_delete),
             notification = notificationText,
@@ -342,40 +375,55 @@ private fun BookmarkItem(
 @Preview(showBackground = true)
 @Composable
 private fun VolumeBookmarksGroupPreview() {
-    MaterialTheme {
-        Box(modifier = Modifier.padding(16.dp)) {
-            VolumeBookmarksGroup(
-                volumeWithBookmarks = VolumeWithBookmarks(
-                    volume = Volume(
-                        volumeName = "The Great Gatsby",
-                        bookFileUri = "",
-                        totalPages = 366,
-                        seriesId = 0L
-                    ),
-                    bookmarks = listOf(
-                        Bookmark(
-                            label = "Bookmark 1",
-                            pageNumber = 12,
-                            addTime = System.currentTimeMillis(),
-                            volumeId = 0
+    CompositionLocalProvider(
+        LocalAppViewModel provides AppViewModelForTest()
+    ) {
+        MaterialTheme {
+            Box(modifier = Modifier.padding(16.dp)) {
+                VolumeBookmarksGroup(
+                    volumeWithBookmarks = VolumeWithBookmarks(
+                        volume = Volume(
+                            volumeName = "The Great Gatsby",
+                            bookFileUri = "",
+                            totalPages = 366,
+                            seriesId = 0L,
+                            mimeType = "application/pdf",
+                            createTime = System.currentTimeMillis()
                         ),
-                        Bookmark(
-                            label = "Bookmark 2",
-                            pageNumber = 122,
-                            addTime = System.currentTimeMillis(),
-                            volumeId = 0
-                        ),
-                        Bookmark(
-                            label = "Bookmark 3",
-                            pageNumber = 240,
-                            addTime = System.currentTimeMillis(),
-                            volumeId = 0
+                        bookmarks = listOf(
+                            Bookmark(
+                                label = "Bookmark 1",
+                                history = ReadingHistory(
+                                    mupdfMark = 0L,
+                                    time = System.currentTimeMillis(),
+                                    pageIndex = 12
+                                ),
+                                volumeId = 0
+                            ),
+                            Bookmark(
+                                label = "Bookmark 2",
+                                history = ReadingHistory(
+                                    mupdfMark = 0L,
+                                    time = System.currentTimeMillis(),
+                                    pageIndex = 122
+                                ),
+                                volumeId = 0
+                            ),
+                            Bookmark(
+                                label = "Bookmark 3",
+                                history = ReadingHistory(
+                                    mupdfMark = 0L,
+                                    time = System.currentTimeMillis(),
+                                    pageIndex = 240
+                                ),
+                                volumeId = 0
+                            )
                         )
-                    )
-                ),
-                onBookmarkClick = {},
-                onBookmarkDelete = {}
-            )
+                    ),
+                    onBookmarkClick = {},
+                    onBookmarkDelete = {}
+                )
+            }
         }
     }
 }
@@ -384,16 +432,38 @@ private fun VolumeBookmarksGroupPreview() {
 @Composable
 private fun BookmarkItemPreview() {
     MaterialTheme {
-        Box(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            // 分页文档
             BookmarkItem(
                 bookmark = Bookmark(
                     label = "Chapter 3: The Beginning",
-                    pageNumber = 45,
-                    addTime = System.currentTimeMillis(),
+                    history = ReadingHistory(
+                        mupdfMark = 0L,
+                        time = System.currentTimeMillis(),
+                        pageIndex = 45
+                    ),
                     volumeId = 0
                 ),
                 volumeName = "The Great Gatsby",
                 totalPages = 366,
+                onClick = {},
+                onDelete = {}
+            )
+            // 流式文档
+            BookmarkItem(
+                bookmark = Bookmark(
+                    label = "Climax",
+                    history = ReadingHistory(
+                        mupdfMark = 0L,
+                        time = System.currentTimeMillis(),
+                        readProgress = 0.3f,
+                        pageIndex = 45,
+                        chapterInfo = "Chapter 3: The Beginning"
+                    ),
+                    volumeId = 0
+                ),
+                volumeName = "The Great Gatsby",
+                totalPages = null,
                 onClick = {},
                 onDelete = {}
             )

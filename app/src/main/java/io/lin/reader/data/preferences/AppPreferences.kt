@@ -1,9 +1,14 @@
 package io.lin.reader.data.preferences
 
 import androidx.annotation.StringRes
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material.icons.filled.SettingsSuggest
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.datastore.preferences.core.edit
 import io.lin.reader.R
 import kotlinx.coroutines.CoroutineScope
@@ -24,8 +29,22 @@ enum class ThemeContrast(@get:StringRes val labelRes: Int) {
     High(R.string.contrast_high)
 }
 
-enum class DarkMode {
-    System, Light, Dark
+enum class DarkMode(
+    val icon: ImageVector,
+    @get:StringRes val labelRes: Int
+) {
+    System(
+        Icons.Default.SettingsSuggest,
+        R.string.dark_mode_system
+    ),
+    Light(
+        Icons.Default.LightMode,
+        R.string.dark_mode_light
+    ),
+    Dark(
+        Icons.Default.DarkMode,
+        R.string.dark_mode_dark
+    )
 }
 
 enum class AppLanguage(@get:StringRes val labelRes: Int) {
@@ -42,12 +61,16 @@ interface AppPreferencesInterface {
     val themeColor: ThemeColor
     val themeContrast: ThemeContrast
     val floatingNavigationBar: Boolean
+    val navigationLabel: Boolean
+    val predictiveBackEnabled: Boolean
 
     fun updateTheme(theme: DarkMode)
     fun updateThemeColor(color: ThemeColor)
     fun updateThemeContrast(contrast: ThemeContrast)
     fun updateLanguage(language: AppLanguage)
     fun toggleFloatingNavigationBar()
+    fun toggleNavigationLabel()
+    fun togglePredictiveBack()
 }
 
 class AppPreferences(
@@ -59,6 +82,9 @@ class AppPreferences(
     override var themeColor by mutableStateOf(ThemeColor.Default)
     override var themeContrast by mutableStateOf(ThemeContrast.Light)
     override var floatingNavigationBar by mutableStateOf(true)
+    override var navigationLabel by mutableStateOf(true)
+    override var predictiveBackEnabled by mutableStateOf(true)
+
 
     init {
         scope.launch {
@@ -99,6 +125,8 @@ class AppPreferences(
                 }
 
                 floatingNavigationBar = preferences[UserPreferencesRepository.APP_FLOATING_NAVIGATION_BAR] ?: true
+                navigationLabel = preferences[UserPreferencesRepository.APP_NAVIGATION_LABEL] ?: true
+                predictiveBackEnabled = preferences[UserPreferencesRepository.APP_PREDICTIVE_BACK_ENABLED] ?: true
             }
         }
     }
@@ -135,6 +163,22 @@ class AppPreferences(
             }
         }
     }
+
+    override fun toggleNavigationLabel() {
+        scope.launch {
+            repo.dataStore.edit {
+                it[UserPreferencesRepository.APP_NAVIGATION_LABEL] = !navigationLabel
+            }
+        }
+    }
+
+    override fun togglePredictiveBack() {
+        scope.launch {
+            repo.dataStore.edit {
+                it[UserPreferencesRepository.APP_PREDICTIVE_BACK_ENABLED] = !predictiveBackEnabled
+            }
+        }
+    }
 }
 
 class AppPreferencesForTest : AppPreferencesInterface {
@@ -143,10 +187,16 @@ class AppPreferencesForTest : AppPreferencesInterface {
     override var themeColor = ThemeColor.Default
     override var themeContrast = ThemeContrast.Light
     override val floatingNavigationBar: Boolean = true
+    override val navigationLabel: Boolean = true
+    override val predictiveBackEnabled: Boolean = true
+
+
 
     override fun updateTheme(theme: DarkMode) {}
     override fun updateThemeColor(color: ThemeColor) {}
     override fun updateThemeContrast(contrast: ThemeContrast) {}
     override fun updateLanguage(language: AppLanguage) {}
     override fun toggleFloatingNavigationBar() {}
+    override fun toggleNavigationLabel() {}
+    override fun togglePredictiveBack() {}
 }

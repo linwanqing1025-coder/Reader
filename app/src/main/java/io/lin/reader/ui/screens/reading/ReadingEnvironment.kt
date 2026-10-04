@@ -1,7 +1,8 @@
-package io.lin.reader.ui.maintab.reading
+package io.lin.reader.ui.screens.reading
 
 import androidx.compose.runtime.staticCompositionLocalOf
-import io.lin.reader.ui.maintab.reading.feature.display.ReadingTransform
+import io.lin.reader.ui.screens.reading.feature.display.ReadingTransform
+import io.lin.reader.ui.screens.reading.ReadingScreenViewmodelInterface
 
 /**
  * 阅读器 ViewModel

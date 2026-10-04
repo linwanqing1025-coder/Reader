@@ -40,3 +40,6 @@
 -keepclasseswithmembernames class * {
     native <methods>;
 }
+
+# Android XR Extensions
+-dontwarn com.android.extensions.xr.**

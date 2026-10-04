@@ -1,4 +1,4 @@
-package io.lin.reader.ui.maintab.setting.details
+package io.lin.reader.ui.screens.setting.details
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -37,16 +37,16 @@ import androidx.compose.ui.unit.dp
 import io.lin.reader.R
 import io.lin.reader.data.preferences.InteractionStyle
 import io.lin.reader.ui.components.screenbar.DynamicTopAppBar
-import io.lin.reader.ui.maintab.setting.SettingList
+import io.lin.reader.ui.screens.setting.SettingList
 import io.lin.reader.ui.theme.ReaderTheme
 import io.lin.reader.ui.components.selection.SelectableBox
-import io.lin.reader.ui.maintab.reading.control.InteractionStyle0Preview
-import io.lin.reader.ui.maintab.reading.control.InteractionStyle1Preview
-import io.lin.reader.ui.maintab.reading.control.InteractionStyle1RtlPreview
-import io.lin.reader.ui.maintab.reading.control.InteractionStyle2Preview
-import io.lin.reader.ui.maintab.reading.control.InteractionStyle2RtlPreview
-import io.lin.reader.ui.maintab.reading.control.InteractionStyle3Preview
-import io.lin.reader.ui.maintab.reading.control.InteractionStyle3RtlPreview
+import io.lin.reader.ui.screens.reading.control.InteractionStyle0Preview
+import io.lin.reader.ui.screens.reading.control.InteractionStyle1Preview
+import io.lin.reader.ui.screens.reading.control.InteractionStyle1RtlPreview
+import io.lin.reader.ui.screens.reading.control.InteractionStyle2Preview
+import io.lin.reader.ui.screens.reading.control.InteractionStyle2RtlPreview
+import io.lin.reader.ui.screens.reading.control.InteractionStyle3Preview
+import io.lin.reader.ui.screens.reading.control.InteractionStyle3RtlPreview
 
 @Composable
 fun InteractionDetailsScreen(
@@ -107,6 +107,8 @@ fun InteractionDetails(
                     modifier = Modifier.padding(vertical = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
+                    Spacer(modifier = Modifier.height(4.dp))
+
                     ColorIndicator(
                         modifier = Modifier.padding(horizontal = 16.dp)
                     )
@@ -116,6 +118,7 @@ fun InteractionDetails(
                     LazyRow(
                         modifier = Modifier.padding(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        contentPadding = PaddingValues(8.dp)
                     ) {
                         items(InteractionStyle.entries.toTypedArray()) { style ->
                             InteractionStyleOption(
@@ -215,12 +218,7 @@ private fun InteractionStyleOption(
             }
         }
 
-        val label = when (interactionStyle) {
-            InteractionStyle.Style0 -> stringResource(R.string.interaction_style_vertical)
-            InteractionStyle.Style1 -> stringResource(R.string.interaction_style_horizontal)
-            InteractionStyle.Style2 -> stringResource(R.string.interaction_style_L)
-            InteractionStyle.Style3 -> stringResource(R.string.interaction_style_Mixed)
-        }
+        val label = stringResource(interactionStyle.displayName)
         Text(
             text = label,
             style = MaterialTheme.typography.labelLarge,

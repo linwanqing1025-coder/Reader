@@ -1,10 +1,6 @@
 # ninja log v5
-2	6292	8080659665926297	CMakeFiles/reader_opencv.dir/reader_jni.cpp.o	a88575439b6efa48
-6306	7084	8080659673493499	D:/Luo/Developer/Android/MyProject/Reader/app/build/intermediates/cxx/Debug/1a4c662r/obj/armeabi-v7a/libreader_opencv.so	e0986358352a039e
+16	6505	8126538790530316	CMakeFiles/reader_opencv.dir/reader_jni.cpp.o	f1263b920ec74c32
+6507	6873	8126538794143637	D:/Luo/Developer/Android/MyProject/Reader/app/build/intermediates/cxx/Debug/1a4c662r/obj/armeabi-v7a/libreader_opencv.so	fb2573800c9045cb
 0	12	0	clean	e2748a664891493
-44	8862	8088340167308905	CMakeFiles/reader_opencv.dir/reader_jni.cpp.o	f1263b920ec74c32
-8864	9358	8088340172700423	D:/Luo/Developer/Android/MyProject/Reader/app/build/intermediates/cxx/Debug/1a4c662r/obj/armeabi-v7a/libreader_opencv.so	fb2573800c9045cb
-1	18	0	clean	e2748a664891493
-0	27	0	clean	e2748a664891493
-19	7264	8113512973934910	CMakeFiles/reader_opencv.dir/reader_jni.cpp.o	f1263b920ec74c32
-7266	8416	8113512984994395	D:/Luo/Developer/Android/MyProject/Reader/app/build/intermediates/cxx/Debug/1a4c662r/obj/armeabi-v7a/libreader_opencv.so	fb2573800c9045cb
+15	11869	8127024920722430	CMakeFiles/reader_opencv.dir/reader_jni.cpp.o	cfab8f7d4d806d1e
+11873	13248	8127024935230679	D:/Luo/Developer/Android/MyProject/Reader/app/build/intermediates/cxx/Debug/1a4c662r/obj/armeabi-v7a/libreader_opencv.so	2c9fcad6ad1db381

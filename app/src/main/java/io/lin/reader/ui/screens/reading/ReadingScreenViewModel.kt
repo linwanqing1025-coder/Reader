@@ -1,48 +1,44 @@
-package io.lin.reader.ui.maintab.reading
+package io.lin.reader.ui.screens.reading
 
 import android.app.Application
 import android.graphics.PointF
-import android.net.Uri
-import android.provider.OpenableColumns
 import android.util.Log
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.core.net.toUri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.artifex.mupdf.fitz.SeekableInputStream
-import com.artifex.mupdf.viewer.ContentInputStream
 import com.artifex.mupdf.viewer.OutlineActivity
 import io.lin.reader.data.booksrepository.BooksRepository
 import io.lin.reader.data.database.Bookmark
 import io.lin.reader.data.database.PageSetting
+import io.lin.reader.data.database.ReadingHistory
 import io.lin.reader.data.database.Series
 import io.lin.reader.data.database.Volume
 import io.lin.reader.data.preferences.ReaderPreferences
 import io.lin.reader.data.preferences.ReaderPreferencesForTest
 import io.lin.reader.data.preferences.ReaderPreferencesInterface
 import io.lin.reader.data.preferences.ReflowPreferences
-import io.lin.reader.data.preferences.ReflowPreferencesInterface
 import io.lin.reader.data.preferences.ReflowPreferencesForTest
+import io.lin.reader.data.preferences.ReflowPreferencesInterface
 import io.lin.reader.data.preferences.UserPreferencesRepository
 import io.lin.reader.data.preferences.VolumeSortMethod
-import io.lin.reader.mupdf.render.MuPDFCoreExtended
+import io.lin.reader.mupdf.core.MuPDFCoreExtended
+import io.lin.reader.mupdf.core.MuPDFCoreFactory
+import io.lin.reader.mupdf.reflow.ReflowCssGenerator
 import io.lin.reader.mupdf.search.MuPDFSearch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
-import kotlin.time.Duration.Companion.minutes
 
 data class DocumentSearchUiState(
     val currentSearchQuery: String = "",
@@ -53,6 +49,7 @@ data class DocumentSearchUiState(
 data class ReadingUiState(
     val error: String? = null,
     val currentPage: Int = 0,
+    val totalPage: Int = 0,
     val volume: Volume? = null,
     val series: Series? = null,
     val volumeList: List<Volume> = emptyList(),
@@ -64,7 +61,7 @@ data class ReadingUiState(
     val highlightLinks: Boolean = false,
 )
 
-private const val APP = "MuPDF"
+private const val TAG = "ReadingScreenViewModel.kt"
 
 interface ReadingScreenViewmodelInterface {
     val uiState: StateFlow<ReadingUiState>
@@ -89,8 +86,9 @@ interface ReadingScreenViewmodelInterface {
     fun clearSearch()
     fun toggleFavouriteState()
     fun isPageBookmarked(currentPage: Int, bookmarkList: List<Bookmark>): Boolean
+    fun getChapterByPage(pageIndex: Int): OutlineActivity.Item?
     fun generateAutoBookmarkLabel(): String
-    fun addBookmark(label: String, pageNumber: Int)
+    fun addBookmark(label: String, pageNumber: Int, chapterInfo: String?)
     fun deleteBookmark(pageNumber: Int)
 }
 
@@ -118,7 +116,6 @@ class ReadingScreenViewModel(
     private var searchJob: Job? = null
     private var bookmarksJob: Job? = null
     private var pageSettingsJob: Job? = null
-    private var historySyncJob: Job? = null
     private val rendererMutex = Mutex()
 
     /**
@@ -130,7 +127,6 @@ class ReadingScreenViewModel(
         clearSearch()
         bookmarksJob?.cancel()
         pageSettingsJob?.cancel()
-        historySyncJob?.cancel()
         mPageSizes.clear()
     }
 
@@ -138,104 +134,16 @@ class ReadingScreenViewModel(
      * 防止 MuPDFCore 造成内存泄漏以及搜素未结束造成的性能浪费
      */
     override fun onCleared() {
-        syncHistory()
         clearResource()
     }
-
-    private fun openBuffer(buffer: ByteArray, magic: String): MuPDFCoreExtended? {
-        return try {
-            MuPDFCoreExtended(buffer, magic)
-        } catch (e: Exception) {
-            Log.e(APP, "Error opening document buffer: $e")
-            null
-        }
-    }
-
-    private fun openStream(stm: SeekableInputStream, magic: String): MuPDFCoreExtended? {
-        return try {
-            val core = MuPDFCoreExtended(stm, magic)
-            core
-        } catch (e: Exception) {
-            Log.e(APP, "Error opening document stream: $e")
-            null
-        }
-    }
-
-    private suspend fun openCore(uri: Uri, size: Long, mimetype: String): MuPDFCoreExtended? =
-        withContext(Dispatchers.IO) {
-            val cr = getApplication<Application>().contentResolver
-            var buf: ByteArray? = null
-
-            try {
-                val limit = 8 * 1024 * 1024
-                if (size < 0) { // size is unknown
-                    cr.openInputStream(uri)?.use { isStream ->
-                        val tempBuf = ByteArray(limit)
-                        val used = isStream.read(tempBuf)
-                        val atEOF = isStream.read() == -1
-                        if (used >= 0 && (used < limit || atEOF)) {
-                            buf = if (tempBuf.size == used) tempBuf else tempBuf.copyOf(used)
-                        }
-                    }
-                } else if (size <= limit) { // size is known and below limit
-                    cr.openInputStream(uri)?.use { isStream ->
-                        val tempBuf = ByteArray(size.toInt())
-                        val used = isStream.read(tempBuf)
-                        if (used >= 0 && used == size.toInt()) {
-                            buf = tempBuf
-                        }
-                    }
-                }
-            } catch (_: OutOfMemoryError) {
-                buf = null
-            } catch (e: Exception) {
-                Log.e(APP, "Error reading core: $e")
-                buf = null
-            }
-
-            val buffer = buf
-            if (buffer != null) {
-                Log.i(APP, "  Opening document from memory buffer of size " + buffer.size)
-                openBuffer(buffer, mimetype)
-            } else {
-                Log.i(APP, "  Opening document from stream")
-                openStream(ContentInputStream(cr, uri, size), mimetype)
-            }
-        }
 
     /**
      * 搬运 DocumentActivity.java 的 onCreate() 方法中的部分逻辑。
      * 实现解析 URI 、解析文件大小和类型，并将结果传递给 openCore() 以初始化 MuPDFCore 。
      */
-    private suspend fun createMuPDFDocumentActivity(volume: Volume) {
+    private suspend fun createMuPDFActivity(volume: Volume) {
         val uri = volume.bookFileUri.toUri()
-        val cr = getApplication<Application>().contentResolver
-
-        var fileSize: Long = -1
-
-        // Query metadata
-        try {
-            cr.query(
-                uri,
-                arrayOf(OpenableColumns.SIZE),
-                null,
-                null,
-                null
-            )?.use { cursor ->
-                if (cursor.moveToFirst()) {
-                    val sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE)
-                    if (sizeIndex >= 0 && !cursor.isNull(sizeIndex)) {
-                        fileSize = cursor.getLong(sizeIndex)
-                    }
-                }
-            }
-        } catch (e: Exception) {
-            Log.e(APP, "Error querying URI metadata: $e")
-        }
-
-        if (fileSize == 0L) fileSize = -1
-
-        val core = openCore(uri, fileSize, volume.mimeType)
+        val core = MuPDFCoreFactory.openCore(getApplication(), uri, volume.mimeType)
         if (core != null) {
             _mCore.value = core
             _muPDFSearch.value = MuPDFSearch()
@@ -266,42 +174,46 @@ class ReadingScreenViewModel(
             order = VolumeSortMethod.Name,
             isAscending = true
         )
+
+        // 加载 MuPDFCore
+        createMuPDFActivity(volume)
+        val core = _mCore.value ?: return
+
+        // 页数
+        val pageCount = core.countPages()
+        // 目录
+        val outlineList = if (core.hasOutline()) core.outline else emptyList()
+        // 书签
+        observeBookmarks(bookId)
+        // 页面设置
+        observePageSettings(bookId)
+
         // 更新 UI
         _uiState.update {
             it.copy(
+                error = null,
+                currentPage = jumpToPage ?: volume.history?.pageIndex ?: 0,
+                totalPage = pageCount,
                 volume = volume,
                 series = series,
                 volumeList = volumeList,
-                currentPage = jumpToPage ?: volume.lastReadPage,
                 isEdgeVolume = calculateEdgeVolume(volume, volumeList),
-                error = null,
+                outlineList = outlineList,
                 highlightLinks = false,
             )
         }
 
-        // 加载 MuPDFCore
-        createMuPDFDocumentActivity(volume)
+        // 页面跳转逻辑 (0-based)
+        val startPage = jumpToPage ?: run {
+            val mark = volume.history?.mupdfMark
+            val pageFromMark =
+                if (mark != null && mark != 0L) core.pageNumberFromBookmark(mark) else null
 
-        // 获取目录
-        val core = _mCore.value
-        if (core != null && core.hasOutline()) {
-            val outline = core.outline
-            if (outline != null) {
-                _uiState.update { it.copy(outlineList = outline, error = null) }
-            }
+            pageFromMark?.takeIf { it >= 0 } ?: (volume.history?.pageIndex ?: 0)
         }
 
-        // 获取书签和页面设置
-        observeBookmarks(bookId)
-        observePageSettings(bookId)
-
-        // 页面跳转逻辑 (0-based)
-        val startPage = jumpToPage ?: (if (volume.lastReadPage >= 0) volume.lastReadPage else 0)
         goToPage(startPage)
         updateLastRead(startPage)
-
-        // 启动定时历史记录同步
-        startHistorySync()
     }
 
     /**
@@ -332,18 +244,28 @@ class ReadingScreenViewModel(
     override fun performLayout(width: Float, height: Float) {
         val core = _mCore.value ?: return
         if (!core.isReflowable) return
+        // 检查 Volume 状态是否正常
+        val volume = _uiState.value.volume ?: return
+        if (volume.totalPages != null) {
+            // reflowable 文档的 totalPages 应该为 null
+            viewModelScope.launch {
+                booksRepository.updateVolume(volume.copy(totalPages = null))
+            }
+        }
 
         viewModelScope.launch(Dispatchers.IO) {
             rendererMutex.withLock {
                 val currentP = _uiState.value.currentPage
 
                 // 注入自定义 CSS
-                Log.d("FontCheck","在干活吗？")
+                Log.d("FontCheck", "在干活吗？")
                 core.customReflowStyle(
                     publisherCss = true,
-                    userCss = if (reflowPreferences.usePublisherStyle) "" else reflowPreferences.generateCss()
+                    userCss =
+                        if (reflowPreferences.usePublisherStyle) ""
+                        else ReflowCssGenerator.generateCss(reflowPreferences)
                 )
-                Log.d("FontCheck","在干活。")
+                Log.d("FontCheck", "在干活。")
 
                 // 执行排版: layout(int oldPage, int w, int h, int em)
                 val newPage = core.layout(
@@ -355,12 +277,14 @@ class ReadingScreenViewModel(
 
                 // 更新状态
                 val newTotalPages = core.countPages()
+                val newOutlineList = if (core.hasOutline()) core.outline else emptyList()
                 withContext(Dispatchers.Main) {
                     mPageSizes.clear()
                     _uiState.update { state ->
                         state.copy(
-                            volume = state.volume?.copy(totalPages = newTotalPages),
-                            currentPage = newPage
+                            currentPage = newPage,
+                            totalPage = newTotalPages,
+                            outlineList = newOutlineList
                         )
                     }
                 }
@@ -377,6 +301,7 @@ class ReadingScreenViewModel(
         // 增加边界检查：确保跳转页码在 0 到 (总页数-1)之间 (0-based)
         val safeIndex = pageIndex.coerceIn(0, totalCount - 1)
         _uiState.update { it.copy(currentPage = safeIndex) }
+        updateLastRead(safeIndex)
     }
 
     /**
@@ -588,6 +513,22 @@ class ReadingScreenViewModel(
     }
 
     // 书签
+    /**
+     * 计算阅读进度，返回一个 0-1 之间的浮点数
+     * @param pageIndex 传入的页索引（0-based），不传默认从 uiState 中读取当前页码
+     */
+    private fun calculateReadingProgress(pageIndex: Int? = null): Float {
+        val uiState = _uiState.value
+        val volume = uiState.volume ?: return 0f
+        val core = _mCore.value
+
+        val currPage = ((pageIndex ?: uiState.currentPage) + 1).toFloat()
+        val tolPage = volume.totalPages ?: core?.countPages() ?: 0
+        val progress = currPage / tolPage
+
+        return progress
+    }
+
     private fun observeBookmarks(bookId: Long) {
         bookmarksJob?.cancel()
         bookmarksJob = viewModelScope.launch {
@@ -598,7 +539,28 @@ class ReadingScreenViewModel(
     }
 
     override fun isPageBookmarked(currentPage: Int, bookmarkList: List<Bookmark>): Boolean =
-        bookmarkList.any { it.pageNumber == currentPage }
+        bookmarkList.any { it.history.pageIndex == currentPage }
+
+    /**
+     * 根据传入的页码索引，从当前 outlineList 查找并返回对应的 OutlineActivity.Item 章节条目。
+     * 采用二分查找逻辑：寻找其起始页码小于等于给定 pageIndex 且最靠近该页码的章节。
+     * 如果没有匹配的章节或者文档没有大纲，则返回 null。
+     *
+     * @param pageIndex 待查询的页码索引 (0-based)
+     * @return 匹配的 OutlineActivity.Item，没有则返回 null
+     */
+    override fun getChapterByPage(pageIndex: Int): OutlineActivity.Item? {
+        val outlines = _uiState.value.outlineList
+
+        // 1. 标准库扩展函数 binarySearchBy (O(log N))
+        val index = outlines.binarySearchBy(pageIndex) { it.page }
+
+        // 2. 转换索引：命中则取 index；未命中时，插入点的前一位即为小于该页码的最大条目
+        // 原理：未命中时 index = -(insertionPoint + 1)，则 (insertionPoint - 1) = -index - 2
+        val targetIndex = if (index >= 0) index else -index - 2
+
+        return outlines.getOrNull(targetIndex)
+    }
 
     override fun generateAutoBookmarkLabel(): String {
         val bookmarkList = _uiState.value.bookmarkList
@@ -612,68 +574,144 @@ class ReadingScreenViewModel(
         return "Bookmark 99+"
     }
 
-    override fun addBookmark(label: String, pageNumber: Int) {
-        val volumeId = _uiState.value.volume?.id ?: return
+    override fun addBookmark(label: String, pageNumber: Int, chapterInfo: String?) {
+        val uiState = _uiState.value
+        val volumeId = uiState.volume?.id ?: return
+        val core = _mCore.value
+
+        val mark = core?.createMarkFromPage(pageNumber) ?: 0L
+        val progress = calculateReadingProgress(pageNumber)
+
         viewModelScope.launch {
-            booksRepository.insertBookmark(
-                Bookmark(
-                    volumeId = volumeId,
-                    label = label,
-                    pageNumber = pageNumber,
-                    addTime = System.currentTimeMillis()
+            val bookmark = Bookmark(
+                volumeId = volumeId,
+                label = label,
+                history = ReadingHistory(
+                    mupdfMark = mark,
+                    time = System.currentTimeMillis(),
+                    readProgress = progress,
+                    pageIndex = pageNumber,
+                    chapterInfo = chapterInfo
                 )
             )
+            Log.d(TAG, "addBookmark: $bookmark")
+            booksRepository.insertBookmark(bookmark)
         }
     }
 
     override fun deleteBookmark(pageNumber: Int) {
-        _uiState.value.bookmarkList.find { it.pageNumber == pageNumber }?.let {
+        _uiState.value.bookmarkList.find { it.history.pageIndex == pageNumber }?.let {
             viewModelScope.launch { booksRepository.deleteBookmark(it) }
         }
     }
 
 
     // 历史记录
+
     /**
      * 手动更新记录，传递目标页数
      */
-    private fun updateLastRead(page: Int) {
+    private fun updateLastRead(pageIndex: Int) {
+        val core = _mCore.value ?: return
         val currentVolume = _uiState.value.volume ?: return
+
+        val mark = core.createMarkFromPage(pageIndex)
+        val progress = calculateReadingProgress(pageIndex)
+        val chapterInfo = getChapterByPage(pageIndex)?.title
+
         viewModelScope.launch {
             val updatedVolume = currentVolume.copy(
-                lastReadPage = page,
-                lastReadTime = System.currentTimeMillis()
+                history = ReadingHistory(
+                    mupdfMark = mark,
+                    time = System.currentTimeMillis(),
+                    readProgress = progress,
+                    pageIndex = pageIndex,
+                    chapterInfo = chapterInfo
+                )
             )
             booksRepository.updateVolume(updatedVolume)
             _uiState.update { it.copy(volume = updatedVolume) }
-        }
-    }
-
-    /**
-     * 同步记录
-     */
-    private fun syncHistory() {
-        val currentPage = _uiState.value.currentPage
-        updateLastRead(currentPage)
-    }
-
-    /**
-     * 启动自动同步
-     */
-    private fun startHistorySync() {
-        historySyncJob?.cancel()
-        historySyncJob = viewModelScope.launch {
-            while (isActive) {
-                delay(1.minutes)
-                syncHistory()
-            }
         }
     }
 }
 
 class ReadingScreenViewModelForTest : ReadingScreenViewmodelInterface {
     override val uiState: StateFlow<ReadingUiState> =
-        MutableStateFlow(ReadingUiState()).asStateFlow()
+        MutableStateFlow(
+            ReadingUiState(
+                currentPage = 5,
+                volume = Volume(
+                    id = 1,
+                    seriesId = 1,
+                    volumeName = "示例书册卷一",
+                    bookFileUri = "content://media/external/file/1",
+                    mimeType = "application/pdf",
+                    totalPages = 100,
+                    createTime = System.currentTimeMillis(),
+                    history = ReadingHistory(
+                        mupdfMark = 0L,
+                        time = System.currentTimeMillis(),
+                        pageIndex = 5
+                    ),
+                    isFavorite = true
+                ),
+                series = Series(
+                    id = 1,
+                    seriesName = "示例大作系列",
+                    createTime = System.currentTimeMillis(),
+                    volumeCount = 3
+                ),
+                volumeList = listOf(
+                    Volume(
+                        id = 1,
+                        seriesId = 1,
+                        volumeName = "示例书册卷一",
+                        bookFileUri = "content://media/external/file/1",
+                        mimeType = "application/pdf",
+                        totalPages = 100,
+                        createTime = System.currentTimeMillis()
+                    ),
+                    Volume(
+                        id = 2,
+                        seriesId = 1,
+                        volumeName = "示例书册卷二",
+                        bookFileUri = "content://media/external/file/2",
+                        mimeType = "application/pdf",
+                        totalPages = 120,
+                        createTime = System.currentTimeMillis()
+                    ),
+                    Volume(
+                        id = 3,
+                        seriesId = 1,
+                        volumeName = "示例书册卷三",
+                        bookFileUri = "content://media/external/file/3",
+                        mimeType = "application/pdf",
+                        totalPages = 110,
+                        createTime = System.currentTimeMillis()
+                    )
+                ),
+                isEdgeVolume = true to false,
+                bookmarkList = listOf(
+                    Bookmark(
+                        id = 1,
+                        volumeId = 1,
+                        label = "书签 01",
+                        history = ReadingHistory(mupdfMark = 0L, time = 0L, pageIndex = 5)
+                    ),
+                    Bookmark(
+                        id = 2,
+                        volumeId = 1,
+                        label = "书签 02",
+                        history = ReadingHistory(mupdfMark = 0L, time = 0L, pageIndex = 20)
+                    )
+                ),
+                outlineList = listOf(
+                    OutlineActivity.Item("第一章：启程", 0),
+                    OutlineActivity.Item("第二章：相遇", 15),
+                    OutlineActivity.Item("第三章：挑战", 40)
+                )
+            )
+        ).asStateFlow()
     override val mCore: StateFlow<MuPDFCoreExtended?> =
         MutableStateFlow<MuPDFCoreExtended?>(null).asStateFlow()
     override val muPDFSearch: StateFlow<MuPDFSearch?> =
@@ -696,8 +734,9 @@ class ReadingScreenViewModelForTest : ReadingScreenViewmodelInterface {
     override fun clearSearch() {}
     override fun toggleFavouriteState() {}
     override fun isPageBookmarked(currentPage: Int, bookmarkList: List<Bookmark>): Boolean = false
+    override fun getChapterByPage(pageIndex: Int): OutlineActivity.Item? = null
     override fun generateAutoBookmarkLabel(): String = ""
-    override fun addBookmark(label: String, pageNumber: Int) {}
+    override fun addBookmark(label: String, pageNumber: Int, chapterInfo: String?) {}
     override fun deleteBookmark(pageNumber: Int) {}
     override fun performLayout(width: Float, height: Float) {}
 }

@@ -1,4 +1,4 @@
-package io.lin.reader.ui.maintab.setting
+package io.lin.reader.ui.screens.setting
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column

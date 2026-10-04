@@ -114,6 +114,9 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.11.0")
     implementation("androidx.appcompat:appcompat:1.8.0")
 
+    //Color Picker
+    implementation("com.github.skydoves:colorpicker-compose:1.3.0")
+
     //Icon
     implementation("androidx.compose.material:material-icons-extended:1.7.8")
 
@@ -123,6 +126,7 @@ dependencies {
     //ViewModel
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.11.0")
     implementation("androidx.xr.compose.material3:material3:1.0.0-alpha17")
+    compileOnly("com.android.extensions.xr:extensions-xr:1.4.0")
 
     //Coil
     implementation("io.coil-kt:coil-compose:2.7.0")

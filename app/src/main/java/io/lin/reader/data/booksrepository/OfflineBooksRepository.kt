@@ -173,7 +173,7 @@ class OfflineBooksRepository(
 
         try {
             // 1. 插入新系列
-            val newSeries = Series(seriesName = newSeriesName, volumeCount = volumeList.size)
+            val newSeries = Series(seriesName = newSeriesName, volumeCount = volumeList.size, createTime = System.currentTimeMillis())
             val newSeriesId = upsertSeries(newSeries)
             if (newSeriesId == -1L) return 0
 
@@ -195,7 +195,7 @@ class OfflineBooksRepository(
 
             // 修正册数
             if (insertedIds.size != newSeries.volumeCount) {
-                seriesDao.updateSeries(Series(id = newSeriesId, seriesName = newSeriesName, volumeCount = insertedIds.size))
+                seriesDao.updateSeries(Series(id = newSeriesId, seriesName = newSeriesName, volumeCount = insertedIds.size, createTime = newSeries.createTime))
             }
 
             return insertedIds.size

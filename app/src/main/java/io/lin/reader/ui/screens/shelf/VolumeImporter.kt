@@ -21,7 +21,7 @@ data class BookDetails(
     val fileUri: String = "",
     val volumeName: String = "Default Volume Name",
     val mimeType: String = "application/pdf", // 默认设为 PDF
-    val pageCount: Int = 0,
+    val pageCount: Int? = 0,
     val seriesId: Long = 0, //seriesId=0 表示这是本新书（默认）
     val coverUri: String? = null // 记录已存在的封面
 )
@@ -35,7 +35,8 @@ fun BookDetails.toVolume(): Volume = Volume(
     mimeType = mimeType, // 同步 MIME 类型
     coverUri = coverUri, // 复用已有的封面字段
     totalPages = pageCount,
-    seriesId = seriesId
+    seriesId = seriesId,
+    createTime = System.currentTimeMillis()
 )
 
 /**
@@ -109,7 +110,7 @@ class VolumeImporter(
                     val (baseInfo, resolvedMimeType) = withContext(Dispatchers.IO) {
                         val name =
                             FileUtils.getFileName(application, uri) ?: "Unnamed Book ${index + 1}"
-                        val count = MuPDFUtils.getPageCount(application, uri)
+                        val count = MuPDFUtils.getPageCount(application, uri) // 若为流式文档(如EPUB)则为 null
                         val cover = booksRepository.getCoverUriByFileUri(uriStr) // 提前查询库中是否已有该文件的封面
 
                         // 2.2.1 还原官方解析策略
@@ -132,7 +133,7 @@ class VolumeImporter(
                         seriesId = 0,
                         coverUri = existingCover
                     ).also {
-                        Log.d(TAG, "第${index + 1}本书记载完成：$fileName, 类型: ${resolvedMimeType}, 封面状态: ${if(existingCover!=null) "已有" else "无"}")
+                        Log.d(TAG, "第${index + 1}本书记载完成：$fileName, 类型: ${resolvedMimeType}, 页数：$pageCount, 封面状态: ${if(existingCover!=null) "已有" else "无"}")
                     }
                 }
             }.filterNotNull()

@@ -1,4 +1,4 @@
-package io.lin.reader.ui.maintab.shelf.components
+package io.lin.reader.ui.screens.shelf.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

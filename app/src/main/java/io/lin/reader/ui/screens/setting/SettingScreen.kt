@@ -12,22 +12,30 @@ import androidx.compose.material.icons.automirrored.rounded.FormatAlignLeft
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.ColorLens
-import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.filled.RemoveRedEye
 import androidx.compose.material.icons.filled.RestartAlt
 import androidx.compose.material.icons.filled.TouchApp
+import androidx.compose.material.icons.outlined.DeleteSweep
 import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TooltipAnchorPosition
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,19 +43,21 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.paneTitle
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.lin.reader.R
 import io.lin.reader.navigation.NavKey
-import io.lin.reader.ui.components.screenbar.StyledTitleScreenBar
-import io.lin.reader.ui.components.snackbar.StyledSnackbarHost
 import io.lin.reader.ui.ViewModelProvider
 import io.lin.reader.ui.components.dialog.NotificationDialog
-import io.lin.reader.ui.maintab.setting.SettingList
-import io.lin.reader.ui.maintab.setting.SettingListItem
-import io.lin.reader.ui.maintab.setting.SettingScreenViewModel
+import io.lin.reader.ui.components.snackbar.StyledSnackbarHost
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -60,14 +70,28 @@ fun SettingScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
     val historyPreferences = viewModel.historyPreferences
 
     Scaffold(
-        modifier = modifier,
+        modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         snackbarHost = { StyledSnackbarHost(snackbarHostState) },
         topBar = {
-            StyledTitleScreenBar(title = stringResource(R.string.navigation_label_setting))
+            SettingScreenTopBar(
+                scrollBehavior = scrollBehavior,
+                onResetAll = {
+                    val appContext = context.applicationContext
+                    viewModel.resetAllSettings(
+                        onResult = {
+                            val text = appContext.getString(R.string.setting_reset_done)
+                            scope.launch {
+                                snackbarHostState.showSnackbar(text)
+                            }
+                        }
+                    )
+                }
+            )
         },
         containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
@@ -93,11 +117,7 @@ fun SettingScreen(
                             contentDescription = null,
                         )
                     }
-                    HorizontalDivider(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        thickness = 0.5.dp,
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                    )
+
                     SettingListItem(
                         headlineContent = { Text(stringResource(R.string.setting_sort)) },
                         onClick = {
@@ -120,7 +140,7 @@ fun SettingScreen(
                     SettingListItem(
                         headlineContent = { Text(stringResource(R.string.setting_clear_history)) },
                         onClick = { isClearing = true },
-                        leadingIcon = Icons.Filled.DeleteSweep
+                        leadingIcon = Icons.Outlined.DeleteSweep
                     )
                     if (isClearing) {
                         NotificationDialog(
@@ -133,11 +153,7 @@ fun SettingScreen(
                             }
                         )
                     }
-                    HorizontalDivider(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        thickness = 0.5.dp,
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                    )
+
                     SettingListItem(
                         headlineContent = { Text(stringResource(R.string.setting_show_unread_books)) },
                         onClick = {
@@ -150,12 +166,8 @@ fun SettingScreen(
                             onCheckedChange = { historyPreferences.updateShowUnreadBooks(it) }
                         )
                     }
+
                     if (historyPreferences.showUnreadBooks) {
-                        HorizontalDivider(
-                            modifier = Modifier.padding(horizontal = 16.dp),
-                            thickness = 0.5.dp,
-                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                        )
                         SettingListItem(
                             headlineContent = { Text(stringResource(R.string.setting_expand_unread_books)) },
                             onClick = {
@@ -188,11 +200,7 @@ fun SettingScreen(
                             contentDescription = null,
                         )
                     }
-                    HorizontalDivider(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        thickness = 0.5.dp,
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                    )
+
                     SettingListItem(
                         headlineContent = { Text(stringResource(R.string.setting_reading_mode)) },
                         onClick = {
@@ -205,11 +213,7 @@ fun SettingScreen(
                             contentDescription = null,
                         )
                     }
-                    HorizontalDivider(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        thickness = 0.5.dp,
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                    )
+
                     SettingListItem(
                         headlineContent = { Text(stringResource(R.string.setting_interaction_style)) },
                         onClick = {
@@ -222,11 +226,7 @@ fun SettingScreen(
                             contentDescription = null,
                         )
                     }
-                    HorizontalDivider(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        thickness = 0.5.dp,
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                    )
+
                     SettingListItem(
                         headlineContent = { Text(stringResource(R.string.setting_reflow)) },
                         onClick = {
@@ -239,11 +239,7 @@ fun SettingScreen(
                             contentDescription = null,
                         )
                     }
-                    HorizontalDivider(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        thickness = 0.5.dp,
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                    )
+
                     SettingListItem(
                         headlineContent = { Text(stringResource(R.string.setting_other_reading_settings)) },
                         onClick = {
@@ -258,37 +254,64 @@ fun SettingScreen(
                     }
                 }
             }
+        }
+    }
+}
 
-            // reset
-            item {
-                SettingList {
-                    var isResetting by remember { mutableStateOf(false) }
-                    SettingListItem(
-                        headlineContent = { Text(stringResource(R.string.setting_reset_all)) },
-                        onClick = { isResetting = true },
-                        leadingIcon = Icons.Default.RestartAlt
-                    )
-                    if (isResetting) {
-                        NotificationDialog(
-                            title = stringResource(R.string.setting_reset_dialog_title),
-                            notification = stringResource(R.string.setting_reset_notification),
-                            onDismiss = { isResetting = false },
-                            onConfirm = {
-                                isResetting = false
-                                val appContext = context.applicationContext
-                                viewModel.resetAllSettings(
-                                    onResult = {
-                                        val text = appContext.getString(R.string.setting_reset_done)
-                                        scope.launch {
-                                            snackbarHostState.showSnackbar(text)
-                                        }
-                                    }
-                                )
-                            }
-                        )
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SettingScreenTopBar(
+    scrollBehavior: TopAppBarScrollBehavior,
+    onResetAll: () -> Unit
+) {
+    val isResetting = remember { mutableStateOf(false) }
+    val resetStr = stringResource(R.string.setting_reset_all)
+
+    TopAppBar(
+        title = {
+            Text(
+                stringResource(R.string.navigation_label_setting),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        },
+        actions = {
+            TooltipBox(
+                positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+                    TooltipAnchorPosition.Below
+                ),
+                tooltip = {
+                    PlainTooltip(
+                        modifier = Modifier.semantics {
+                            liveRegion = LiveRegionMode.Assertive
+                            paneTitle = resetStr
+                        }
+                    ) {
+                        Text(resetStr)
                     }
+                },
+                state = rememberTooltipState(),
+            ) {
+                IconButton(onClick = { isResetting.value = true }) {
+                    Icon(
+                        imageVector = Icons.Default.RestartAlt,
+                        contentDescription = resetStr,
+                    )
                 }
             }
-        }
+        },
+        scrollBehavior = scrollBehavior
+    )
+
+    if (isResetting.value) {
+        NotificationDialog(
+            title = stringResource(R.string.setting_reset_dialog_title),
+            notification = stringResource(R.string.setting_reset_notification),
+            onDismiss = { isResetting.value = false },
+            onConfirm = {
+                onResetAll()
+                isResetting.value = false
+            }
+        )
     }
 }

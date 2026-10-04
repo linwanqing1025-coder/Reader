@@ -1,64 +1,124 @@
 package io.lin.reader.navigation
 
-import androidx.compose.animation.togetherWith
+import androidx.activity.compose.BackHandler
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
-import io.lin.reader.ui.MainTabsScreen
-import io.lin.reader.ui.maintab.reading.ReadingScreen
-import io.lin.reader.ui.maintab.setting.SettingScreenViewModel
+import io.lin.reader.ui.ViewModelProvider
+import io.lin.reader.ui.screens.bookmark.BookmarkScreen
+import io.lin.reader.ui.screens.favourite.FavouriteScreen
+import io.lin.reader.ui.screens.history.HistoryScreen
+import io.lin.reader.ui.screens.reading.ReadingScreen
+import io.lin.reader.ui.screens.setting.SettingScreenViewModel
+import io.lin.reader.ui.screens.setting.details.InteractionDetailsScreen
+import io.lin.reader.ui.screens.setting.details.ReflowDetailsScreen
+import io.lin.reader.ui.screens.setting.SettingScreen
+import io.lin.reader.ui.screens.setting.details.AppAppearanceDetailsScreen
+import io.lin.reader.ui.screens.setting.details.OtherReadingSettingDetailsScreen
+import io.lin.reader.ui.screens.setting.details.ReaderColorDetailsScreen
+import io.lin.reader.ui.screens.setting.details.ReadingModeDetailsScreen
+import io.lin.reader.ui.screens.setting.details.SortDetailsScreen
 import io.lin.reader.ui.screens.shelf.SeriesDetailScreen
-import io.lin.reader.ui.maintab.setting.details.AppAppearanceDetailsScreen
-import io.lin.reader.ui.maintab.setting.details.InteractionDetailsScreen
-import io.lin.reader.ui.maintab.setting.details.OtherReadingSettingDetailsScreen
-import io.lin.reader.ui.maintab.setting.details.ReaderColorDetailsScreen
-import io.lin.reader.ui.maintab.setting.details.ReadingModeDetailsScreen
-import io.lin.reader.ui.maintab.setting.details.ReflowDetailsScreen
-import io.lin.reader.ui.maintab.setting.details.SortDetailsScreen
+import io.lin.reader.ui.screens.shelf.ShelfScreen
+
+const val NAV_KEY_METADATA = "io.lin.reader.navigation.NAV_KEY"
+
+/**
+ * 将 NavKey 附加到 metadata 的辅助扩展函数
+ */
+private fun navKeyMetadata(key: NavKey): Map<String, Any> = mapOf(NAV_KEY_METADATA to key)
+
+/**
+ * 构建同时包含 NavKey、前进动画 (transitionSpec)、返回动画 (popTransitionSpec) 和 预测性返回 (predictivePopTransitionSpec) 的 metadata
+ */
+private fun navTransitionMetadata(
+    key: NavKey,
+    navSuiteType: NavigationSuiteType
+): Map<String, Any> = navKeyMetadata(key) +
+        NavDisplay.transitionSpec { calculateNavPushTransition(navSuiteType) } +
+        NavDisplay.popTransitionSpec { calculateNavPopTransition(navSuiteType) } +
+        NavDisplay.predictivePopTransitionSpec { calculateNavPopTransition(navSuiteType) }
 
 @Composable
 fun ReaderNavDisplay(
     backStack: List<NavKey>,
+    navSuiteType: NavigationSuiteType,
     onNavigateUp: () -> Unit,
-    onNavigate: (NavKey) -> Boolean
+    onNavigate: (NavKey) -> Boolean,
+    predictiveBackEnabled: Boolean = false // TODO: 预测性返回手势开关
 ) {
+    val canPop = backStack.size > 1
+
     NavDisplay(
         backStack = backStack,
         entryDecorators = listOf(
             rememberSaveableStateHolderNavEntryDecorator(),
             rememberSharedViewModelStoreNavEntryDecorator()
         ),
-        onBack = onNavigateUp
+        onBack = onNavigateUp,
+        transitionSpec = { calculateNavPushTransition(navSuiteType) },
+        popTransitionSpec = { calculateNavPopTransition(navSuiteType) },
+        predictivePopTransitionSpec = { calculateNavPopTransition(navSuiteType) }
     ) { key: NavKey ->
-        when(key){
-            is NavKey.Root -> NavEntry(
+
+        val transitionMetadata = navTransitionMetadata(key, navSuiteType)
+
+        fun createEntry(
+            extraMetadata: Map<String, Any> = emptyMap(),
+            content: @Composable () -> Unit
+        ): NavEntry<NavKey> {
+            return NavEntry(
                 key = key,
-                contentKey = key.toString(),
-                metadata = NavDisplay.transitionSpec {
-                    val enter = getEnterAnimation()
-                    val exit = getExitAnimation()
-                    enter togetherWith exit
-                }
+                metadata = transitionMetadata + extraMetadata
             ) {
-                MainTabsScreen(
-                    activeRootKey = key,
-                    onNavigate = onNavigate,
-                    onNavigateUp = onNavigateUp
+                // 当开启关闭预测性返回手势时，拦截系统侧滑缩放，直接触发 onNavigateUp 播放你的平滑退场动画
+                BackHandler(enabled = !predictiveBackEnabled && canPop) {
+                    onNavigateUp()
+                }
+                content()
+            }
+        }
+
+        when (key) {
+            // 书架
+            NavKey.Shelf -> createEntry {
+                ShelfScreen(onNavigate = { onNavigate(it) })
+            }
+
+            // 收藏
+            NavKey.Favourite -> createEntry {
+                FavouriteScreen(onVolumeClick = { onNavigate(NavKey.Reading(it.id)) })
+            }
+
+            // 书签
+            NavKey.Bookmark -> createEntry {
+                BookmarkScreen(
+                    onBookmarkClick = { volumeId, pageNumber ->
+                        onNavigate(NavKey.Reading(volumeId, pageNumber))
+                    }
                 )
             }
 
-            is NavKey.SettingDetails -> NavEntry(
-                key = key,
-                metadata = NavDisplay.transitionSpec {
-                    val enter = getEnterAnimation()
-                    val exit = getExitAnimation()
-                    enter togetherWith exit
-                } + SharedViewModelStoreNavEntryDecorator.parent(NavKey.Setting.toString())
+            // 历史记录
+            NavKey.History -> createEntry {
+                HistoryScreen(entryVolumeReading = { onNavigate(NavKey.Reading(it.id)) })
+            }
+
+            // 设置主页
+            NavKey.Setting -> createEntry {
+                SettingScreen(onNavigateToDetail = { onNavigate(it) })
+            }
+
+            // 设置二级详情页
+            is NavKey.SettingDetails -> createEntry(
+                extraMetadata = SharedViewModelStoreNavEntryDecorator.parent(NavKey.Setting.toString())
             ) {
                 val parentViewModel = viewModel<SettingScreenViewModel>(
-                    viewModelStoreOwner = LocalSharedViewModelStoreOwner.current
+                    viewModelStoreOwner = LocalSharedViewModelStoreOwner.current,
+                    factory = ViewModelProvider.Factory
                 )
                 when (key) {
                     NavKey.AppAppearance -> AppAppearanceDetailsScreen(
@@ -76,19 +136,13 @@ fun ReaderNavDisplay(
                         onNavigateBack = onNavigateUp,
                         readerColor = parentViewModel.readingPreferences.readerColor,
                         onPageColorChange = {
-                            parentViewModel.readingPreferences.updatePageColor(
-                                it
-                            )
+                            parentViewModel.readingPreferences.updatePageColor(it)
                         },
                         onBackgroundColorChange = {
-                            parentViewModel.readingPreferences.updateBackgroundColor(
-                                it
-                            )
+                            parentViewModel.readingPreferences.updateBackgroundColor(it)
                         },
                         onFilterColorChange = {
-                            parentViewModel.readingPreferences.updateFilterColor(
-                                it
-                            )
+                            parentViewModel.readingPreferences.updateFilterColor(it)
                         }
                     )
 
@@ -117,14 +171,8 @@ fun ReaderNavDisplay(
                 }
             }
 
-            is NavKey.Reading -> NavEntry(
-                key = key,
-                metadata = NavDisplay.transitionSpec {
-                    val enter = getEnterAnimation()
-                    val exit = getExitAnimation()
-                    enter togetherWith exit
-                }
-            ) {
+            // 阅读界面
+            is NavKey.Reading -> createEntry {
                 ReadingScreen(
                     bookId = key.bookId,
                     pageNumber = key.pageNumber,
@@ -132,14 +180,8 @@ fun ReaderNavDisplay(
                 )
             }
 
-            is NavKey.SeriesDetail -> NavEntry(
-                key = key,
-                metadata = NavDisplay.transitionSpec {
-                    val enter = getEnterAnimation()
-                    val exit = getExitAnimation()
-                    enter togetherWith exit
-                }
-            ) {
+            // 系列详情页
+            is NavKey.SeriesDetail -> createEntry {
                 SeriesDetailScreen(
                     seriesId = key.seriesId,
                     onNavBack = onNavigateUp,

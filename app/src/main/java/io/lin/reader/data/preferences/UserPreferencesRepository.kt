@@ -20,6 +20,8 @@ class UserPreferencesRepository(
         val APP_THEME_CONTRAST = stringPreferencesKey("app_theme_contrast")
         val APP_LANGUAGE = stringPreferencesKey("app_language")
         val APP_FLOATING_NAVIGATION_BAR = booleanPreferencesKey("app_floating_navigation_bar")
+        val APP_NAVIGATION_LABEL = booleanPreferencesKey("app_navigation_label")
+        val APP_PREDICTIVE_BACK_ENABLED = booleanPreferencesKey("predictive_back_enabled")
 
         // Shelf
         val SERIES_SORT_METHOD = stringPreferencesKey("series_sort_method")

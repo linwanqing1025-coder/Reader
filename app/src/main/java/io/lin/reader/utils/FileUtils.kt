@@ -8,6 +8,7 @@ import android.provider.OpenableColumns
 import android.util.Log
 import java.io.File
 import android.webkit.MimeTypeMap
+import androidx.core.net.toUri
 
 object FileUtils {
     private const val TAG = "FileUtils"
@@ -64,7 +65,7 @@ object FileUtils {
      */
     fun deleteFileIfUriIsLocal(uriString: String): Boolean {
         return try {
-            val uri = Uri.parse(uriString)
+            val uri = uriString.toUri()
             if (uri.scheme == "file") {
                 val file = File(uri.path ?: "")
                 if (file.exists()) {

@@ -1,4 +1,4 @@
-package io.lin.reader.ui.maintab.setting
+package io.lin.reader.ui.screens.setting
 
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat

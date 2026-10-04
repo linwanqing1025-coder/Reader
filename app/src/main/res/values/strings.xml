@@ -4,6 +4,7 @@
     <string name="app_name" translatable="false">Reader</string>
 
     <!-- Component -->
+    <string name="navigate_back">Navigate Back</string>
     <string name="blank_screen_notification">Nothing here.</string>
     <string name="cover_error">No Cover</string>
     <string name="confirm">Confirm</string>
@@ -85,7 +86,7 @@
     <!-- HistoryScreen -->
     <string name="history_top_bar_display_unread_books">Display unread books</string>
     <string name="history_top_bar_clear_history">Clear all reading history</string>
-    <string name="history_item_pages">%1$d / %2$d pages</string>
+    <string name="history_item_pages">%1$s / %2$s pages</string>
     <string name="history_item_delete">Delete this history</string>
     <string name="history_item_never_read">Never read</string>
     <string name="history_unread_books">Unread books: </string>
@@ -186,7 +187,8 @@
     <string name="color_picker_navigation">Turn Back</string>
     <string name="color_picker_standard">Standard Color</string>
     <string name="color_picker_custom">Custom Color</string>
-    <string name="color_picker_opacity">Opacity</string>
+    <string name="color_picker_alpha">Alpha</string>
+    <string name="color_picker_brightness">Brightness</string>
     <string name="color_picker_placer_holder">e.g. #FFFFFF</string>
     <string name="color_picker_label">Hexadecimal color</string>
     <string name="color_picker_error">Invalid hex format</string>
@@ -219,6 +221,10 @@
     <string name="other_reading_settings_fixed_page_indicator">Fixed page indicator</string>
 
     <!-- ReadingScreen -->
+    <string name="reading_topbar_favourite">Add To Favourites</string>
+    <string name="reading_topbar_bookmark">Add Bookmark</string>
+    <string name="reading_topbar_outline">Outline</string>
+
     <string name="reading_bookmark_delete_notification">Are you sure you want to delete the bookmark at page &lt;b>%1$d&lt;/b> ?\n\nThis action cannot be undone.</string>
     <string name="reading_bookmark_dialog_title_add">Add Bookmark</string>
     <string name="reading_bookmark_dialog_placeholder">Enter bookmark label</string>
@@ -246,6 +252,11 @@
     <string name="reading_remove_gutter_off">Remove gutter is off</string>
     <string name="reading_fixed_page_indicator_on">Fixed page indicator is on</string>
     <string name="reading_fixed_page_indicator_off">Fixed page indicator is off</string>
+    <string name="reading_crop_none">None</string>
+    <string name="reading_crop_horizontal">Horizontal</string>
+    <string name="reading_crop_vertical">Vertical</string>
+    <string name="reading_crop_all">All</string>
+    <string name="reading_screen_direction">Screen Direction</string>
 
     <string name="reading_document_directory_title">Outline</string>
     <string name="reading_document_directory_no_outline">No outline found in this document</string>

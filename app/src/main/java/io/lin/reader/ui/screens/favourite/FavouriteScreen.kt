@@ -1,4 +1,4 @@
-package io.lin.reader.ui.maintab.favourite
+package io.lin.reader.ui.screens.favourite
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -8,28 +8,34 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowRight
 import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.SwapVert
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.DeleteSweep
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TooltipAnchorPosition
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -43,7 +49,12 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.paneTitle
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -51,15 +62,13 @@ import io.lin.reader.R
 import io.lin.reader.data.database.Series
 import io.lin.reader.data.database.Volume
 import io.lin.reader.data.preferences.SeriesSortMethod
+import io.lin.reader.ui.ViewModelProvider
 import io.lin.reader.ui.components.blankscreen.BlankScreenContent
 import io.lin.reader.ui.components.dialog.NotificationDialog
-import io.lin.reader.ui.components.menu.StyledMenu
-import io.lin.reader.ui.components.menu.StyledMenuIcon
-import io.lin.reader.ui.components.menu.StyledMenuItem
-import io.lin.reader.ui.components.screenbar.StyledBarIconButton
-import io.lin.reader.ui.components.screenbar.StyledScreenBar
+import io.lin.reader.ui.components.menu.StyledDropdownMenu
+import io.lin.reader.ui.components.menu.StyledDropdownMenuItem
 import io.lin.reader.ui.components.snackbar.StyledSnackbarHost
-import io.lin.reader.ui.ViewModelProvider
+import io.lin.reader.ui.screens.shelf.components.VolumeBox
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -72,7 +81,7 @@ fun FavouriteScreen(
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
     val shelfPreferences = viewModel.shelfPreferences
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
@@ -126,92 +135,141 @@ private fun FavouriteScreenTopBar(
     onRemoveAllFavourites: () -> Unit,
 ) {
     val isRemovingAllFavourites = remember { mutableStateOf(false) }
-    StyledScreenBar(
-        title = stringResource(R.string.navigation_label_favourite),
-        scrollBehavior = scrollBehavior,
-        iconButtonTools = {
-            Box {
-                var mainMenuExpanded by remember { mutableStateOf(false) }
-                var sortSubMenuExpanded by remember { mutableStateOf(false) }
-                StyledBarIconButton(
-                    imageVector = Icons.AutoMirrored.Filled.Sort,
-                    contentDescription = stringResource(R.string.favourite_top_bar_sort),
-                    onClick = { mainMenuExpanded = !mainMenuExpanded }
-                )
-                StyledMenu(
-                    expanded = mainMenuExpanded,
-                    onDismissRequest = {
-                        sortSubMenuExpanded = false
-                        mainMenuExpanded = false
+
+    val sortIconStr = stringResource(R.string.favourite_top_bar_sort)
+    val sortByStr = stringResource(R.string.sort_by)
+    val sortOrderStr = stringResource(R.string.sort_order)
+    val ascendingStr =
+        if (isAscending) stringResource(R.string.sort_ascending)
+        else stringResource(R.string.sort_descending)
+    val clearStr = stringResource(R.string.favourite_top_bar_clear_bookmark)
+
+    TopAppBar(
+        title = {
+            Text(
+                stringResource(R.string.navigation_label_favourite),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        },
+        actions = {
+            // Sort
+            TooltipBox(
+                positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+                    TooltipAnchorPosition.Below
+                ),
+                tooltip = {
+                    PlainTooltip(
+                        modifier = Modifier.semantics {
+                            liveRegion = LiveRegionMode.Assertive
+                            paneTitle = sortIconStr
+                        }
+                    ) {
+                        Text(sortIconStr)
                     }
+                },
+                state = rememberTooltipState(),
+            ) {
+                var isMainMenuExpanded by remember { mutableStateOf(false) }
+                var isSubMenuExpanded by remember { mutableStateOf(false) }
+                IconButton(onClick = { isMainMenuExpanded = true }) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.Sort,
+                        contentDescription = sortIconStr,
+                    )
+                }
+
+                StyledDropdownMenu(
+                    expanded = isMainMenuExpanded,
+                    onDismissRequest = {
+                        isMainMenuExpanded = false
+                        isSubMenuExpanded = false
+                    },
                 ) {
-                    StyledMenuItem(
-                        text =
-                            if (isAscending) stringResource(R.string.sort_ascending)
-                            else stringResource(R.string.sort_descending),
-                        onClick = { onToggleOrder() },
+                    StyledDropdownMenuItem(
+                        text = { Text(sortOrderStr) },
+                        onClick = {
+                            onToggleOrder()
+                            isMainMenuExpanded = false
+                        },
                         leadingIcon = {
-                            StyledMenuIcon(
-                                imageVector = if (isAscending) Icons.Default.ArrowUpward else Icons.Default.ArrowDownward,
-                                contentDescription = stringResource(R.string.sort_order)
+                            Icon(
+                                if (isAscending) Icons.Default.ArrowUpward else Icons.Default.ArrowDownward,
+                                ascendingStr
                             )
                         }
                     )
+
                     Box {
-                        StyledMenuItem(
-                            text = stringResource(R.string.sort_series_sort),
-                            onClick = { sortSubMenuExpanded = !sortSubMenuExpanded },
-                            leadingIcon = {
-                                StyledMenuIcon(
-                                    imageVector = Icons.Default.SwapVert,
-                                    contentDescription = stringResource(R.string.favourite_top_bar_sort_selected)
-                                )
-                            },
-                            trailingIcon = {
-                                StyledMenuIcon(
-                                    imageVector = Icons.AutoMirrored.Filled.ArrowRight,
-                                    contentDescription = stringResource(R.string.favourite_top_bar_sort_submenu)
-                                )
-                            }
+                        StyledDropdownMenuItem(
+                            text = { Text(sortByStr) },
+                            leadingIcon = { Icon(Icons.Default.SwapVert, sortByStr) },
+                            onClick = { isSubMenuExpanded = !isSubMenuExpanded }
                         )
-                        StyledMenu(
-                            expanded = sortSubMenuExpanded,
-                            onDismissRequest = { }
+
+                        // SubMenu
+                        StyledDropdownMenu(
+                            expanded = isSubMenuExpanded,
+                            onDismissRequest = { isSubMenuExpanded = false },
                         ) {
                             SeriesSortMethod.entries.forEach { method ->
-                                StyledMenuItem(
-                                    text = when (method) {
-                                        SeriesSortMethod.Name -> stringResource(R.string.series_sort_name)
-                                        SeriesSortMethod.CreateTime -> stringResource(R.string.series_sort_create_time)
+                                StyledDropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            when (method) {
+                                                SeriesSortMethod.Name -> stringResource(R.string.series_sort_name)
+                                                SeriesSortMethod.CreateTime -> stringResource(R.string.series_sort_create_time)
+                                            }
+                                        )
                                     },
                                     onClick = {
                                         onSortMethodChange(method)
-                                        sortSubMenuExpanded = false
-                                        mainMenuExpanded = false
+                                        isSubMenuExpanded = false
+                                        isMainMenuExpanded = false
                                     },
-                                    leadingIcon = {
-                                        if (sortMethod == method) {
-                                            StyledMenuIcon(
-                                                imageVector = Icons.Default.Check,
-                                                contentDescription = stringResource(R.string.favourite_top_bar_sort_selected)
+                                    leadingIcon = if (sortMethod == method) {
+                                        {
+                                            Icon(
+                                                Icons.Default.Check,
+                                                stringResource(R.string.favourite_top_bar_sort_selected)
                                             )
-                                        } else {
-                                            Spacer(Modifier.size(22.dp))
                                         }
-                                    }
+                                    } else null
                                 )
                             }
                         }
                     }
                 }
             }
-            StyledBarIconButton(
-                imageVector = Icons.Filled.DeleteSweep,
-                contentDescription = stringResource(R.string.favourite_top_bar_clear_bookmark),
-                onClick = { isRemovingAllFavourites.value = true },
-            )
-        }
+
+            // Clear All
+            TooltipBox(
+                positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+                    TooltipAnchorPosition.Below
+                ),
+                tooltip = {
+                    PlainTooltip(
+                        modifier = Modifier.semantics {
+                            liveRegion = LiveRegionMode.Assertive
+                            paneTitle = clearStr
+                        }
+                    ) {
+                        Text(clearStr)
+                    }
+                },
+                state = rememberTooltipState(),
+            ) {
+                IconButton(onClick = { isRemovingAllFavourites.value = true }) {
+                    Icon(
+                        imageVector = Icons.Outlined.DeleteSweep,
+                        contentDescription = clearStr,
+                    )
+                }
+            }
+        },
+        scrollBehavior = scrollBehavior
     )
+
     if (isRemovingAllFavourites.value) {
         NotificationDialog(
             title = stringResource(R.string.favourite_dialog_title),
@@ -263,24 +321,24 @@ private fun FavouriteScreenContent(
                                 var expanded by remember { mutableStateOf(false) }
 
                                 Box(contentAlignment = Alignment.TopCenter) {
-                                    io.lin.reader.ui.maintab.shelf.components.VolumeBox(
+                                    VolumeBox(
                                         volume = volume,
-                                        enterVolume = { onVolumeClick(volume) },
-                                        activateSelecting = { expanded = true }
+                                        onClick = { onVolumeClick(volume) },
+                                        onLongClick = { expanded = true }
                                     )
 
-                                    StyledMenu(
+                                    StyledDropdownMenu(
                                         expanded = expanded,
-                                        onDismissRequest = { expanded = false }
+                                        onDismissRequest = { expanded = false },
                                     ) {
-                                        StyledMenuItem(
-                                            text = stringResource(R.string.favourite_menu_remove),
+                                        StyledDropdownMenuItem(
+                                            text = { Text(stringResource(R.string.favourite_menu_remove)) },
                                             onClick = {
                                                 removeVolumeFromFavourite(volume)
                                                 expanded = false
                                             },
                                             leadingIcon = {
-                                                StyledMenuIcon(
+                                                Icon(
                                                     imageVector = Icons.Outlined.Delete,
                                                     contentDescription = stringResource(R.string.favourite_menu_remove)
                                                 )
@@ -336,24 +394,26 @@ private fun FavouriteSeriesHeader(
 @Preview(showBackground = true, widthDp = 400, heightDp = 600)
 @Composable
 fun FavouriteScreenContentPreview() {
-    val series1 = Series(id = 1, seriesName = "Harry Potter", volumeCount = 7)
-    val series2 = Series(id = 2, seriesName = "Lord of the Rings", volumeCount = 3)
+    val series1 = Series(id = 1, seriesName = "Harry Potter", volumeCount = 7, createTime = 0L)
+    val series2 = Series(id = 2, seriesName = "Lord of the Rings", volumeCount = 3, createTime = 0L)
 
     val grouped = mapOf(
         series1 to listOf(
-            Volume(id = 1, volumeName = "Philosopher's Stone", bookFileUri = "", seriesId = 1),
-            Volume(id = 2, volumeName = "Chamber of Secrets", bookFileUri = "", seriesId = 1),
-            Volume(id = 3, volumeName = "Prisoner of Azkaban", bookFileUri = "", seriesId = 1),
-            Volume(id = 4, volumeName = "Goblet of Fire", bookFileUri = "", seriesId = 1)
+            Volume(id = 1, volumeName = "Philosopher's Stone", bookFileUri = "", seriesId = 1, mimeType = "application/pdf", createTime = 0L),
+            Volume(id = 2, volumeName = "Chamber of Secrets", bookFileUri = "", seriesId = 1, mimeType = "application/pdf", createTime = 0L),
+            Volume(id = 3, volumeName = "Prisoner of Azkaban", bookFileUri = "", seriesId = 1, mimeType = "application/pdf", createTime = 0L),
+            Volume(id = 4, volumeName = "Goblet of Fire", bookFileUri = "", seriesId = 1, mimeType = "application/pdf", createTime = 0L)
         ),
         series2 to listOf(
             Volume(
                 id = 5,
                 volumeName = "The Fellowship of the Ring",
                 bookFileUri = "",
-                seriesId = 2
+                seriesId = 2,
+                mimeType = "application/pdf",
+                createTime = 0L
             ),
-            Volume(id = 6, volumeName = "The Two Towers", bookFileUri = "", seriesId = 2)
+            Volume(id = 6, volumeName = "The Two Towers", bookFileUri = "", seriesId = 2, mimeType = "application/pdf", createTime = 0L)
         )
     )
 

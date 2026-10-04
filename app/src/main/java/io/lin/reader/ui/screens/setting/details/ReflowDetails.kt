@@ -1,4 +1,4 @@
-package io.lin.reader.ui.maintab.setting.details
+package io.lin.reader.ui.screens.setting.details
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
@@ -31,6 +31,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.FormatAlignLeft
 import androidx.compose.material.icons.automirrored.filled.FormatAlignRight
 import androidx.compose.material.icons.automirrored.filled.FormatIndentIncrease
@@ -50,6 +51,7 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
@@ -85,8 +87,9 @@ import io.lin.reader.data.preferences.ReflowPreferencesForTest
 import io.lin.reader.data.preferences.ReflowPreferencesInterface
 import io.lin.reader.ui.components.screenbar.DynamicTopAppBar
 import io.lin.reader.mupdf.font.PRESET_FONTS
-import io.lin.reader.ui.maintab.setting.SettingList
-import io.lin.reader.ui.maintab.setting.SettingListItem
+import io.lin.reader.ui.screens.setting.SettingList
+import io.lin.reader.ui.screens.setting.SettingListItem
+import io.lin.reader.ui.components.colorpicker.ReaderColorPicker
 import io.lin.reader.ui.theme.ReaderTheme
 
 @Composable
@@ -352,15 +355,29 @@ fun ReflowDetails(
                         }
                     }
                 } else {
-                    ColorPicker(
-                        title = colorPickerTitle,
-                        currentColor = currentColor,
-                        onColorChange = {
-                            currentColor = it
-                            onColorChangeLambda(it)
-                        },
-                        onBackClick = { isShowingColorSelector = false }
-                    )
+                    SettingList(
+                        title = {
+                            Row {
+                                IconButton(onClick = { isShowingColorSelector = false }) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                        contentDescription = null
+                                    )
+                                }
+                            }
+                            Text(colorPickerTitle)
+                        }
+                    ) {
+                        Box(Modifier.padding(16.dp)) {
+                            ReaderColorPicker(
+                                currentColor = currentColor,
+                                onColorChange = {
+                                    currentColor = it
+                                    onColorChangeLambda(it)
+                                }
+                            )
+                        }
+                    }
                 }
             }
         }

@@ -1,4 +1,4 @@
-package io.lin.reader.ui.maintab.shelf.components
+package io.lin.reader.ui.screens.shelf.components
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.combinedClickable
@@ -15,6 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,41 +33,15 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
 import io.lin.reader.R
 import io.lin.reader.data.database.Volume
 import io.lin.reader.ui.components.cover.VolumeCover
-import io.lin.reader.ui.components.menu.StyledMenu
-import io.lin.reader.ui.components.menu.StyledMenuIcon
-import io.lin.reader.ui.components.menu.StyledMenuItem
+import io.lin.reader.ui.components.menu.StyledDropdownMenu
+import io.lin.reader.ui.components.menu.StyledDropdownMenuItem
 import io.lin.reader.ui.components.selection.SelectableBox
-
-
-@Preview(showBackground = true)
-@Composable
-fun SeriesActionPopupPreview() {
-    MaterialTheme.colorScheme.primary
-
-    Box(
-        modifier = Modifier
-            .size(300.dp, 300.dp)
-            .padding(16.dp),
-        contentAlignment = Alignment.TopStart
-    ) {
-        Box {
-            SeriesActionPopup(
-                expanded = true,
-                onDismissRequest = {},
-                offset = DpOffset(0.dp, 0.dp),
-                onEdit = {},
-                onDelete = {},
-            )
-        }
-    }
-}
 
 @Composable
 private fun SeriesActionPopup(
@@ -76,33 +51,33 @@ private fun SeriesActionPopup(
     onEdit: () -> Unit,
     onDelete: () -> Unit,
 ) {
-    StyledMenu(
+    StyledDropdownMenu(
         expanded = expanded,
         onDismissRequest = onDismissRequest,
         offset = offset,
         properties = PopupProperties(clippingEnabled = true),
     ) {
-        StyledMenuItem(
-            text = stringResource(R.string.shelf_menu_edit_name),
+        StyledDropdownMenuItem(
+            text = { Text(stringResource(R.string.shelf_menu_edit_name)) },
             onClick = {
                 onEdit()
                 onDismissRequest()
             },
             leadingIcon = {
-                StyledMenuIcon(
+                Icon(
                     imageVector = Icons.Outlined.Edit,
                     contentDescription = stringResource(R.string.shelf_menu_edit_name)
                 )
             }
         )
-        StyledMenuItem(
-            text = stringResource(R.string.shelf_menu_delete),
+        StyledDropdownMenuItem(
+            text = { Text(stringResource(R.string.shelf_menu_delete)) },
             onClick = {
                 onDelete()
                 onDismissRequest()
             },
             leadingIcon = {
-                StyledMenuIcon(
+                Icon(
                     imageVector = Icons.Outlined.Delete,
                     contentDescription = stringResource(R.string.shelf_menu_delete)
                 )
@@ -210,15 +185,19 @@ fun SeriesBox(
 
 /**
  * 可点击、可选中的单本书籍图标（MD3 重塑版，带阴影）。
+ *
+ * selected == true : 单击响应 onSelectedChange;
+ *
+ * selected == false : 单击响应 onClick.
  */
 @Composable
 fun VolumeBox(
     volume: Volume,
     isSelected: Boolean = false,
     isSelectingVolume: Boolean = false,
-    changeSelectedState: () -> Unit = {},
-    enterVolume: () -> Unit = {},
-    activateSelecting: () -> Unit = {},
+    onSelectedChange: ((Boolean) -> Unit)? = null,
+    onClick: (() -> Unit)? = null,
+    onLongClick: (() -> Unit)? = null,
 ) {
     val volumeName = volume.volumeName
     val bookWidth = 100.dp
@@ -236,15 +215,10 @@ fun VolumeBox(
         SelectableBox(
             modifier = Modifier.size(width = bookWidth, height = bookHeight),
             selected = isSelected,
-            onSelectedChange = { changeSelectedState() },
+            onSelectedChange = onSelectedChange,
             isSelectionMode = isSelectingVolume,
-            onClick = enterVolume,
-            onLongClick = {
-                if (!isSelectingVolume) {
-                    activateSelecting()
-                    changeSelectedState()
-                }
-            },
+            onClick = onClick,
+            onLongClick = onLongClick,
             shape = shape
         ) {
             VolumeCover(

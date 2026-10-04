@@ -1,35 +1,80 @@
 package io.lin.reader.data.preferences
 
+import android.graphics.Color
+import androidx.annotation.StringRes
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Crop
+import androidx.compose.material.icons.filled.CropFree
+import androidx.compose.material.icons.filled.CropLandscape
+import androidx.compose.material.icons.filled.CropPortrait
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.datastore.preferences.core.edit
-import io.lin.reader.ui.maintab.setting.details.CropMode
+import io.lin.reader.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 
-enum class ReadingMode {
-    Single,
-    Dual,
-    Scroll
+enum class ReadingMode(
+    @StringRes val displayName: Int
+) {
+    Single(
+        displayName = R.string.reading_mode_label_single
+    ),
+    Dual(
+        displayName = R.string.reading_mode_label_dual
+    ),
+    Scroll(
+        displayName = R.string.reading_mode_label_scrollable
+    )
 }
 
-enum class PageAlignment {
-    Vertical,
-    Horizontal
+enum class PageAlignment(
+    @StringRes val displayName: Int
+) {
+    Vertical(R.string.page_alignment_vertical),
+    Horizontal(R.string.page_alignment_horizontal)
 }
 
-enum class InteractionStyle {
-    Style0, Style1, Style2, Style3
+enum class InteractionStyle(
+    @StringRes val displayName: Int
+) {
+    Style0(R.string.interaction_style_vertical),
+    Style1(R.string.interaction_style_horizontal),
+    Style2(R.string.interaction_style_L),
+    Style3(R.string.interaction_style_Mixed)
 }
 
 data class ReaderColor(
-    val background: Int = android.graphics.Color.BLACK,
-    val page: Int = android.graphics.Color.WHITE,
-    val filter: Int = 0x00000000
+    val background: Int = Color.BLACK,
+    val page: Int = Color.WHITE,
+    val filter: Int = Color.TRANSPARENT
 )
+
+enum class CropMode(
+    @StringRes val displayName: Int,
+    val icon: ImageVector
+) {
+    None(
+        displayName = R.string.reading_crop_none,
+        icon = Icons.Default.CropFree
+    ),           // 不裁剪
+    Horizontal(
+        displayName = R.string.reading_crop_horizontal,
+        icon = Icons.Default.CropLandscape
+    ),     // 仅左右 (消除书沟)
+    Vertical(
+        displayName = R.string.reading_crop_vertical,
+        icon = Icons.Default.CropPortrait
+    ),       // 仅上下 (去除页眉页脚)
+    All(
+        displayName = R.string.reading_crop_all,
+        icon = Icons.Default.Crop
+    )             // 四周全部裁剪 (自动切边)
+}
 
 interface ReaderPreferencesInterface {
     val readingMode: ReadingMode
@@ -113,9 +158,9 @@ class ReaderPreferences(
                 }
 
                 readerColor = ReaderColor(
-                    background = preferences[UserPreferencesRepository.BACKGROUND_COLOR] ?: android.graphics.Color.BLACK,
-                    page = preferences[UserPreferencesRepository.PAGE_COLOR] ?: android.graphics.Color.WHITE,
-                    filter = preferences[UserPreferencesRepository.FILTER_COLOR] ?: 0x00000000
+                    background = preferences[UserPreferencesRepository.BACKGROUND_COLOR] ?: Color.BLACK,
+                    page = preferences[UserPreferencesRepository.PAGE_COLOR] ?: Color.WHITE,
+                    filter = preferences[UserPreferencesRepository.FILTER_COLOR] ?: Color.TRANSPARENT
                 )
 
                 isInteractionHintPending = preferences[UserPreferencesRepository.INTERACTION_STYLE_HINT_PENDING] ?: true

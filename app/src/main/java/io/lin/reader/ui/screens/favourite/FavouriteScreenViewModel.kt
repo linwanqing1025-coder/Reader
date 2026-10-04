@@ -1,4 +1,4 @@
-package io.lin.reader.ui.maintab.favourite
+package io.lin.reader.ui.screens.favourite
 
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel

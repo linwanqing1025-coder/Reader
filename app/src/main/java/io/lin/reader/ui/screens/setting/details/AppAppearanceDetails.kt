@@ -1,4 +1,4 @@
-package io.lin.reader.ui.maintab.setting.details
+package io.lin.reader.ui.screens.setting.details
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -23,13 +23,13 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Undo
+import androidx.compose.material.icons.automirrored.outlined.Label
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Language
-import androidx.compose.material.icons.filled.Layers
-import androidx.compose.material.icons.filled.LightMode
-import androidx.compose.material.icons.filled.SettingsSuggest
+import androidx.compose.material.icons.filled.Undo
+import androidx.compose.material.icons.outlined.Layers
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -63,14 +63,14 @@ import io.lin.reader.data.preferences.AppPreferencesInterface
 import io.lin.reader.data.preferences.DarkMode
 import io.lin.reader.data.preferences.ThemeColor
 import io.lin.reader.data.preferences.ThemeContrast
-import io.lin.reader.ui.components.menu.StyledMenu
-import io.lin.reader.ui.components.menu.StyledMenuItem
+import io.lin.reader.ui.components.menu.StyledDropdownMenu
+import io.lin.reader.ui.components.menu.StyledDropdownMenuItem
 import io.lin.reader.ui.components.screenbar.DynamicTopAppBar
-import io.lin.reader.ui.maintab.setting.SettingList
-import io.lin.reader.ui.maintab.setting.SettingListItem
+import io.lin.reader.ui.components.selection.SelectableBox
+import io.lin.reader.ui.screens.setting.SettingList
+import io.lin.reader.ui.screens.setting.SettingListItem
 import io.lin.reader.ui.theme.AppThemePalette
 import io.lin.reader.ui.theme.ReaderTheme
-import io.lin.reader.ui.components.selection.SelectableBox
 import io.lin.reader.ui.theme.color.BreezeTheme
 import io.lin.reader.ui.theme.color.DefaultTheme
 import io.lin.reader.ui.theme.color.HoneyTheme
@@ -135,7 +135,7 @@ fun AppAppearanceDetails(
                     LazyRow(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        contentPadding = PaddingValues(vertical = 8.dp)
+                        contentPadding = PaddingValues(8.dp)
                     ) {
                         items(ThemeColor.entries) { color ->
                             ThemePreviewItem(
@@ -195,11 +195,7 @@ fun AppAppearanceDetails(
                                         active = isSelected,
                                         activeContent = {
                                             Icon(
-                                                imageVector = when (theme) {
-                                                    DarkMode.System -> Icons.Default.SettingsSuggest
-                                                    DarkMode.Light -> Icons.Default.LightMode
-                                                    DarkMode.Dark -> Icons.Default.DarkMode
-                                                },
+                                                imageVector = theme.icon,
                                                 contentDescription = null,
                                                 modifier = Modifier.size(SegmentedButtonDefaults.IconSize)
                                             )
@@ -208,11 +204,7 @@ fun AppAppearanceDetails(
                                 },
                                 label = {
                                     Text(
-                                        text = when (theme) {
-                                            DarkMode.System -> stringResource(R.string.dark_mode_system)
-                                            DarkMode.Light -> stringResource(R.string.dark_mode_light)
-                                            DarkMode.Dark -> stringResource(R.string.dark_mode_dark)
-                                        },
+                                        text = stringResource(theme.labelRes),
                                         style = MaterialTheme.typography.labelMedium,
                                         fontWeight = FontWeight.Bold
                                     )
@@ -231,11 +223,33 @@ fun AppAppearanceDetails(
                 SettingListItem(
                     headlineContent = { Text("悬浮导航栏") },
                     onClick = { appPreferences.toggleFloatingNavigationBar() },
-                    leadingIcon = Icons.Default.Layers
+                    leadingIcon = Icons.Outlined.Layers
                 ) {
                     Switch(
                         checked = appPreferences.floatingNavigationBar,
                         onCheckedChange = { appPreferences.toggleFloatingNavigationBar() }
+                    )
+                }
+
+                SettingListItem(
+                    headlineContent = { Text("显示导航栏标签") },
+                    onClick = { appPreferences.toggleNavigationLabel() },
+                    leadingIcon = Icons.AutoMirrored.Outlined.Label
+                ) {
+                    Switch(
+                        checked = appPreferences.navigationLabel,
+                        onCheckedChange = { appPreferences.toggleNavigationLabel() }
+                    )
+                }
+
+                SettingListItem(
+                    headlineContent = { Text("预测性返回手势") },
+                    onClick = { appPreferences.togglePredictiveBack() },
+                    leadingIcon = Icons.AutoMirrored.Filled.Undo
+                ) {
+                    Switch(
+                        checked = appPreferences.predictiveBackEnabled,
+                        onCheckedChange = { appPreferences.togglePredictiveBack() }
                     )
                 }
             }
@@ -267,13 +281,13 @@ fun AppAppearanceDetails(
                     }
 
                     Box {
-                        StyledMenu(
+                        StyledDropdownMenu(
                             expanded = expanded,
-                            onDismissRequest = { expanded = false },
+                            onDismissRequest = { expanded = false }
                         ) {
                             AppLanguage.entries.forEach { lang ->
-                                StyledMenuItem(
-                                    text = stringResource(lang.labelRes),
+                                StyledDropdownMenuItem(
+                                    text = {Text(stringResource(lang.labelRes))},
                                     onClick = {
                                         appPreferences.updateLanguage(lang)
                                         expanded = false
@@ -282,8 +296,7 @@ fun AppAppearanceDetails(
                                         {
                                             Icon(
                                                 Icons.Default.Check,
-                                                contentDescription = null,
-                                                tint = MaterialTheme.colorScheme.primary
+                                                contentDescription = null
                                             )
                                         }
                                     } else null

@@ -1,24 +1,52 @@
 package io.lin.reader.data.preferences
 
 import android.util.Log
+import androidx.annotation.StringRes
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.SortByAlpha
+import androidx.compose.material.icons.outlined.AddToPhotos
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.datastore.preferences.core.edit
+import io.lin.reader.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 private const val TAG = "ShelfPreferences.kt"
 
-enum class SeriesSortMethod {
-    Name,
-    CreateTime
+enum class SeriesSortMethod(
+    val icon: ImageVector,
+    @StringRes val displayName: Int
+) {
+    Name(
+        Icons.Default.SortByAlpha,
+        R.string.series_sort_name
+    ),
+    CreateTime(
+        Icons.Outlined.AddToPhotos,
+        R.string.series_sort_create_time
+    )
 }
 
-enum class VolumeSortMethod {
-    Name,
-    CreateTime,
-    LastReadTime
+enum class VolumeSortMethod(
+    val icon: ImageVector,
+    @StringRes val displayName: Int
+) {
+    Name(
+        Icons.Default.SortByAlpha,
+        R.string.volume_sort_name
+    ),
+    CreateTime(
+        Icons.Outlined.AddToPhotos,
+        R.string.volume_sort_create_time
+    ),
+    LastReadTime(
+        Icons.Default.History,
+        R.string.volume_sort_last_read_time
+    )
 }
 
 data class SortPreference<T>(

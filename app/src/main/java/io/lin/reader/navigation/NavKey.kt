@@ -27,13 +27,13 @@ sealed class NavKey {
     @Serializable
     data object Setting : Root()
 
-    // 各设置详情页
-    @Serializable
-    sealed class SettingDetails : NavKey()
-    
     // 系列详情页
     @Serializable
     data class SeriesDetail(val seriesId: Long) : NavKey()
+
+    // 各设置详情页
+    @Serializable
+    sealed class SettingDetails : NavKey()
 
     @Serializable
     data object AppAppearance : SettingDetails()

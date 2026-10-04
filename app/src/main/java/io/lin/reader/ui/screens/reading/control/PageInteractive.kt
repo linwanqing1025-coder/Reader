@@ -1,4 +1,4 @@
-package io.lin.reader.ui.maintab.reading.control
+package io.lin.reader.ui.screens.reading.control
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box

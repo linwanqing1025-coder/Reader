@@ -1,4 +1,4 @@
-package io.lin.reader.ui.maintab.shelf.components
+package io.lin.reader.ui.screens.shelf.components
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable

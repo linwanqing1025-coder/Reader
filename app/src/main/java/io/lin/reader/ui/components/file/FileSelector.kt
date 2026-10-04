@@ -16,7 +16,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 
-const val TAG = "FileSelector"
+private const val TAG = "FileSelector"
 
 /**
  * 文件选择器的启动函数类型：

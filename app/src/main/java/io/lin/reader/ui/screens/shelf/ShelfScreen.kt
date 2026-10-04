@@ -1,18 +1,40 @@
 package io.lin.reader.ui.screens.shelf
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Sort
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowDownward
+import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.SwapVert
+import io.lin.reader.ui.components.menu.StyledDropdownMenu
+import io.lin.reader.ui.components.menu.StyledDropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.material3.TooltipAnchorPosition
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
@@ -22,29 +44,31 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
-import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.paneTitle
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import io.lin.reader.R
-import io.lin.reader.data.database.Volume
+import io.lin.reader.data.preferences.SeriesSortMethod
 import io.lin.reader.data.preferences.SortPreference
 import io.lin.reader.navigation.NavKey
 import io.lin.reader.ui.components.blankscreen.BlankScreenContent
 import io.lin.reader.ui.components.dialog.DialogWithTextField
 import io.lin.reader.ui.components.dialog.NotificationDialog
-import io.lin.reader.ui.components.floatingbutton.FloatingImportButton
 import io.lin.reader.ui.components.loading.LoadingOverlay
 import io.lin.reader.ui.components.snackbar.StyledSnackbarHost
 import io.lin.reader.ui.ViewModelProvider
-import io.lin.reader.ui.maintab.shelf.components.BookImportDialog
-import io.lin.reader.ui.maintab.shelf.components.SeriesBox
-import io.lin.reader.ui.screens.shelf.components.ShelfScreenTopBar
+import io.lin.reader.ui.components.file.LocalFileSelector
+import io.lin.reader.ui.screens.shelf.components.BookImportDialog
+import io.lin.reader.ui.screens.shelf.components.SeriesBox
 import kotlinx.coroutines.launch
 
 @SuppressLint("SuspiciousIndentation")
@@ -55,65 +79,46 @@ fun ShelfScreen(
     onNavigate: (NavKey) -> Unit = { },
     viewModel: ShelfScreenViewModel = viewModel(factory = ViewModelProvider.Factory),
 ) {
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    // ViewModel 信息
+    val seriesPagingItems = viewModel.seriesPagingItems.collectAsLazyPagingItems()
+    val shelfPreferences = viewModel.shelfPreferences
 
-    // 控制 FAB 展开
-    var fabExpanded by remember { mutableStateOf(true) }
-    val fabNestedScrollConnection = remember {
-        object : NestedScrollConnection {
-            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-                if (available.y < -10) {
-                    fabExpanded = false
-                } else if (available.y > 10) {
-                    fabExpanded = true
-                }
-                return Offset.Zero
-            }
-        }
-    }
-
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
 
-    // 局部 UI 交互状态
+    // 导入书籍
+    val fileSelector = LocalFileSelector.current
+    val scope = rememberCoroutineScope()
     var isLoading by remember { mutableStateOf(false) }
     var fileChoosingFinished by remember { mutableStateOf(false) }
     var isCreatingNewSeries by remember { mutableStateOf(false) }
+    var isShowingTextField by remember { mutableStateOf(false) }
     var destinationSeriesName by remember { mutableStateOf("") }
     var destinationSeriesId by remember { mutableLongStateOf(0L) }
-    var isShowingTextField by remember { mutableStateOf(false) }
-
-    val seriesPagingItems = viewModel.seriesPagingItems.collectAsLazyPagingItems()
-    val shelfPreferences = viewModel.shelfPreferences
     val importSuccessMessage = stringResource(R.string.import_success)
 
     Scaffold(
-        modifier = modifier
-            .nestedScroll(scrollBehavior.nestedScrollConnection)
-            .nestedScroll(fabNestedScrollConnection),
+        modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         snackbarHost = { StyledSnackbarHost(snackbarHostState) },
         topBar = {
             ShelfScreenTopBar(
-                scrollBehavior = scrollBehavior,
                 sortPreference = SortPreference(
                     shelfPreferences.seriesSortMethod,
                     shelfPreferences.seriesSortAscending
                 ),
-                onToggleSortAscending = viewModel.shelfPreferences::toggleSeriesSortAscending,
-                onSortMethodChange = viewModel.shelfPreferences::updateSeriesSortMethod
-            )
-        },
-        floatingActionButton = {
-            FloatingImportButton(
-                expanded = fabExpanded,
-                enterLoadingState = { isLoading = true },
-                afterChoose = {
-                    isLoading = false
-                    if (it.isNotEmpty()) {
-                        fileChoosingFinished = true
-                        viewModel.volumeImporter.updateVolumesToImportByUriList(it)
+                updateSortMethod = viewModel.shelfPreferences::updateSeriesSortMethod,
+                toggleSortOrder = viewModel.shelfPreferences::toggleSeriesSortAscending,
+                onImportIconClick = {
+                    isLoading = true
+                    fileSelector("application/pdf") { uris ->
+                        isLoading = false
+                        if (uris.isNotEmpty()) {
+                            viewModel.volumeImporter.updateVolumesToImportByUriList(uris)
+                            fileChoosingFinished = true
+                        }
                     }
-                }
+                },
+                scrollBehavior = scrollBehavior
             )
         }
     ) { innerPadding ->
@@ -267,4 +272,188 @@ private fun ShelfContent(
             }
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ShelfScreenTopBar(
+    modifier: Modifier = Modifier,
+    sortPreference: SortPreference<SeriesSortMethod>,
+    updateSortMethod: (SeriesSortMethod) -> Unit,
+    toggleSortOrder: () -> Unit,
+    onImportIconClick: () -> Unit,
+    scrollBehavior: TopAppBarScrollBehavior? = null,
+){
+    val sortIconStr = stringResource(R.string.sort_series_sort)
+    val sortByStr = stringResource(R.string.sort_by)
+    val sortOrderStr = stringResource(R.string.sort_order)
+    val ascendingStr =
+        if (sortPreference.isAscending) stringResource(R.string.sort_ascending)
+        else stringResource(R.string.sort_descending)
+    val importStr = stringResource(R.string.import_book)
+    TopAppBar(
+        modifier = modifier,
+        title = {
+            Text(stringResource(R.string.navigation_label_shelf), maxLines = 1, overflow = TextOverflow.Ellipsis)
+        },
+        actions = {
+            // Sort
+            TooltipBox(
+                positionProvider =
+                    TooltipDefaults.rememberTooltipPositionProvider(
+                        TooltipAnchorPosition.Below
+                    ),
+                tooltip = {
+                    PlainTooltip(
+                        modifier = Modifier.semantics {
+                            liveRegion = LiveRegionMode.Assertive
+                            paneTitle = sortIconStr
+                        }
+                    ) {
+                        Text(sortIconStr)
+                    }
+                },
+                state = rememberTooltipState(),
+            )
+            {
+                var isMainMenuExpanded by remember { mutableStateOf(false) }
+                var isSubMenuExpanded by remember { mutableStateOf(false) }
+                IconButton(onClick = { isMainMenuExpanded = true }) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.Sort,
+                        contentDescription = sortIconStr,
+                    )
+                }
+                // 一级菜单
+                StyledDropdownMenu(
+                    expanded = isMainMenuExpanded,
+                    onDismissRequest = {
+                        isMainMenuExpanded = false
+                        isSubMenuExpanded = false
+                    },
+                ) {
+                    StyledDropdownMenuItem(
+                        text = { Text(sortOrderStr) },
+                        onClick = toggleSortOrder,
+                        leadingIcon = {
+                            Icon(
+                                if (sortPreference.isAscending) Icons.Default.ArrowUpward else Icons.Default.ArrowDownward,
+                                ascendingStr
+                            )
+                        }
+                    )
+
+                    Box {
+                        StyledDropdownMenuItem(
+                            text = { Text(sortByStr) },
+                            leadingIcon = { Icon(Icons.Default.SwapVert, sortByStr) },
+                            onClick = { isSubMenuExpanded = !isSubMenuExpanded }
+                        )
+
+                        // 二级子菜单 (SubMenu)
+                        StyledDropdownMenu(
+                            expanded = isSubMenuExpanded,
+                            onDismissRequest = { isSubMenuExpanded = false },
+                        ) {
+                            SeriesSortMethod.entries.forEach { method ->
+                                StyledDropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            when (method) {
+                                                SeriesSortMethod.Name -> stringResource(
+                                                    R.string.series_sort_name
+                                                )
+                                                SeriesSortMethod.CreateTime -> stringResource(
+                                                    R.string.series_sort_create_time
+                                                )
+                                            }
+                                        )
+                                    },
+                                    onClick = {
+                                        updateSortMethod(method)
+                                    },
+                                    leadingIcon = if (sortPreference.sortMethod == method) {
+                                        {
+                                            Icon(
+                                                Icons.Default.Check,
+                                                stringResource(R.string.shelf_top_bar_sort_selected)
+                                            )
+                                        }
+                                    } else null
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Import New Volumes
+            TooltipBox(
+                positionProvider =
+                    TooltipDefaults.rememberTooltipPositionProvider(
+                        TooltipAnchorPosition.Below
+                    ),
+                tooltip = {
+                    PlainTooltip(
+                        modifier =
+                            Modifier.semantics {
+                                liveRegion = LiveRegionMode.Assertive
+                                paneTitle = importStr
+                            }
+                    ) {
+                        Text(importStr)
+                    }
+                },
+                state = rememberTooltipState(),
+            ) {
+                IconButton(onClick = onImportIconClick) {
+                    Icon(
+                        imageVector = Icons.Filled.Add,
+                        contentDescription = importStr,
+                    )
+                }
+            }
+        },
+        scrollBehavior = scrollBehavior
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview
+@Composable
+@Suppress("DEPRECATION") // Move to currentWindowAdaptiveInfoV2 when dependency is updated
+private fun ShelfScreenScreenTopBarPreview() {
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        topBar = {
+            ShelfScreenTopBar(
+                sortPreference = SortPreference(
+                    SeriesSortMethod.Name,
+                    true
+                ),
+                updateSortMethod = {},
+                toggleSortOrder = {},
+                onImportIconClick = {},
+                scrollBehavior = scrollBehavior
+            )
+        },
+        content = { innerPadding ->
+            LazyColumn(
+                modifier = Modifier.padding(innerPadding),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                val list = (0..75).map { it.toString() }
+                items(count = list.size) {
+                    Text(
+                        text = list[it],
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                    )
+                }
+            }
+        },
+    )
 }

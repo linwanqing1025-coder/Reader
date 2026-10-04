@@ -1,4 +1,4 @@
-package io.lin.reader.ui.maintab.reading.control
+package io.lin.reader.ui.screens.reading.control
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
@@ -68,11 +68,10 @@ import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import io.lin.reader.ui.maintab.reading.LocalReadingViewModel
-import io.lin.reader.ui.maintab.reading.ReadingScreenViewModelForTest
-import io.lin.reader.mupdf.search.MuPDFDockedSearchBar
 import io.lin.reader.mupdf.search.MuPDFSearch
-import io.lin.reader.ui.maintab.setting.details.ReflowDetails
+import io.lin.reader.ui.screens.reading.LocalReadingViewModel
+import io.lin.reader.ui.screens.reading.ReadingScreenViewModelForTest
+import io.lin.reader.ui.screens.setting.details.ReflowDetails
 import io.lin.reader.ui.theme.ReaderTheme
 
 /**
@@ -91,6 +90,8 @@ fun ToolsBar(
 ) {
     val viewModel = LocalReadingViewModel.current!!
     val uiState by viewModel.uiState.collectAsState()
+
+    val isReflowable = viewModel.mCore.collectAsState().value?.isReflowable ?: false
     val currentPage = uiState.currentPage
     val currentRotation = (uiState.pageSettings[currentPage]?.rotation) ?: 0
     val currentSearchQuery = uiState.searchUiState.currentSearchQuery
@@ -98,7 +99,7 @@ fun ToolsBar(
     // 统一背景颜色
     val unifiedContainerColor = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.9f)
 
-    var expanded by rememberSaveable { mutableStateOf(false) }
+    var expanded by rememberSaveable { mutableStateOf(true) } // TODO
     // 单变量控制：当前显示的第二层组件类型
     var activePanel by remember { mutableStateOf<SecondaryPanel?>(null) }
     // 记录最后一次非空的面板，用于在整个区域退出动画期间保持内容和高度稳定
@@ -132,7 +133,7 @@ fun ToolsBar(
                     toolbarContentColor = unifiedContainerColor
                 ),
                 leadingContent = {
-                    // 黑夜模式
+                    // 黑夜模式：反色
                     ToolIconButton(
                         modifier = Modifier.width(itemWidth),
                         imageVector = Icons.Rounded.DarkMode,
@@ -140,9 +141,10 @@ fun ToolsBar(
                         active = false,
                         expanded = false
                     ) {
-                        //TODO
+                        // TODO
                     }
-                    // 重排
+
+                    // 重排/排版
                     ToolIconButton(
                         modifier = Modifier.width(itemWidth),
                         imageVector = Icons.AutoMirrored.Rounded.FormatAlignLeft,
@@ -153,6 +155,7 @@ fun ToolsBar(
                             if (activePanel == SecondaryPanel.Reflow) null
                             else SecondaryPanel.Reflow
                     }
+
                     // 批注
                     ToolIconButton(
                         modifier = Modifier.width(itemWidth),
@@ -161,21 +164,24 @@ fun ToolsBar(
                     ) {
                         // TODO
                     }
+
                     // 页旋转
-                    val rotationAngle by animateFloatAsState(
-                        targetValue = currentRotation.toFloat(),
-                        animationSpec = spring(stiffness = Spring.StiffnessLow),
-                        label = "RotateIconAnimation"
-                    )
-                    ToolIconButton(
-                        modifier = Modifier
-                            .width(itemWidth)
-                            .rotate(rotationAngle),
-                        imageVector = Icons.AutoMirrored.Rounded.RotateRight,
-                        description = "Rotate Page",
-                        active = currentRotation != 0,
-                    ) {
-                        viewModel.rotateCurrentPage(currentPage)
+                    if (!isReflowable) {
+                        val rotationAngle by animateFloatAsState(
+                            targetValue = currentRotation.toFloat(),
+                            animationSpec = spring(stiffness = Spring.StiffnessLow),
+                            label = "RotateIconAnimation"
+                        )
+                        ToolIconButton(
+                            modifier = Modifier
+                                .width(itemWidth)
+                                .rotate(rotationAngle),
+                            imageVector = Icons.AutoMirrored.Rounded.RotateRight,
+                            description = "Rotate Page",
+                            active = currentRotation != 0,
+                        ) {
+                            viewModel.rotateCurrentPage(currentPage)
+                        }
                     }
 
                     // 链接高亮
@@ -186,7 +192,6 @@ fun ToolsBar(
                         active = uiState.highlightLinks,
                         onClick = viewModel::toggleHighlightLinks
                     )
-
 
                     // 搜索
                     ToolIconButton(
@@ -329,7 +334,7 @@ fun ToolsBar(
 private fun DynamicPanelCard(
     modifier: Modifier = Modifier,
     content: @Composable (ColumnScope.() -> Unit)
-){
+) {
     val unifiedContainerColor = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.9f)
     Card(
         modifier = modifier
@@ -342,7 +347,7 @@ private fun DynamicPanelCard(
             disabledContentColor = unifiedContainerColor,
             disabledContainerColor = unifiedContainerColor
         )
-    ){
+    ) {
         content()
     }
 }

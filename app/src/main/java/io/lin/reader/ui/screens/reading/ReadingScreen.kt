@@ -1,4 +1,4 @@
-package io.lin.reader.ui.maintab.reading
+package io.lin.reader.ui.screens.reading
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Box

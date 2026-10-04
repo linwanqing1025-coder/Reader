@@ -81,34 +81,82 @@ class SeriesDetailScreenViewModel(
     private val _selectedVolumes = MutableStateFlow<Set<Long>>(emptySet())
     val selectedVolumes: StateFlow<Set<Long>> = _selectedVolumes.asStateFlow()
 
-    fun toggleSelectedVolume(volumeId: Long) {
-        val currentSet = _selectedVolumes.value
-        _selectedVolumes.value = if (currentSet.contains(volumeId)) {
-            currentSet - volumeId
-        } else {
-            currentSet + volumeId
-        }
-    }
-
-    fun clearSelectedVolumes() {
-        _selectedVolumes.value = emptySet()
-    }
-
-    fun toggleSelectAllVolumes() {
-        viewModelScope.launch {
-            val id = _seriesId.value ?: return@launch
-            val series = seriesStream.value ?: return@launch
-            val currentSelected = _selectedVolumes.value
-
-            if (currentSelected.size >= series.volumeCount && series.volumeCount > 0) {
-                clearSelectedVolumes()
+    val selectionAction = SelectionAction()
+    inner class SelectionAction{
+        fun toggleVolumeSelected(volumeId: Long) {
+            val currentSet = _selectedVolumes.value
+            _selectedVolumes.value = if (currentSet.contains(volumeId)) {
+                currentSet - volumeId
             } else {
-                val volumes = booksRepository.getVolumesInSeries(
-                    seriesId = id,
-                    order = shelfPreferences.volumeSortMethod,
-                    isAscending = shelfPreferences.volumeSortAscending
-                )
-                _selectedVolumes.value = volumes.map { it.id }.toSet()
+                currentSet + volumeId
+            }
+        }
+
+        fun addToSelected(volumeId: Long){
+            _selectedVolumes.value += volumeId
+        }
+
+        fun addToSelected(volumeIds: Set<Long>){
+            _selectedVolumes.value += volumeIds
+        }
+
+        fun removeFromSelected(volumeId: Long){
+            _selectedVolumes.value -= volumeId
+        }
+
+        fun removeFromSelected(volumeIds: Set<Long>){
+            _selectedVolumes.value -= volumeIds
+        }
+
+        fun setSelectedVolumes(volumeIds: Set<Long>){
+            _selectedVolumes.value = volumeIds
+        }
+
+        fun clearSelectedVolumes() {
+            _selectedVolumes.value = emptySet()
+        }
+
+        fun toggleSelectAllVolumes() {
+            viewModelScope.launch {
+                val id = _seriesId.value ?: return@launch
+                val series = seriesStream.value ?: return@launch
+                val currentSelected = _selectedVolumes.value
+
+                if (currentSelected.size >= series.volumeCount && series.volumeCount > 0) {
+                    clearSelectedVolumes()
+                } else {
+                    val volumes = booksRepository.getVolumesInSeries(
+                        seriesId = id,
+                        order = shelfPreferences.volumeSortMethod,
+                        isAscending = shelfPreferences.volumeSortAscending
+                    )
+                    _selectedVolumes.value = volumes.map { it.id }.toSet()
+                }
+            }
+        }
+
+        fun deleteSelectedVolumes(onSeriesDeleted: () -> Unit = {}) {
+            val id = _seriesId.value ?: return
+            viewModelScope.launch {
+                val selectedIds = _selectedVolumes.value.toList()
+                if (selectedIds.isEmpty()) return@launch
+
+                try {
+                    val series = seriesStream.value ?: return@launch
+                    val totalCount = series.volumeCount
+                    val selectedCount = selectedIds.size
+
+                    if (selectedCount >= totalCount) {
+                        booksRepository.deleteSeriesById(id)
+                        onSeriesDeleted()
+                    } else {
+                        booksRepository.deleteVolumesByIds(selectedIds)
+                        val newCount = (totalCount - selectedCount).coerceAtLeast(0)
+                        booksRepository.updateSeries(series.copy(volumeCount = newCount))
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "批量删除操作失败", e)
+                }
             }
         }
     }
@@ -123,31 +171,6 @@ class SeriesDetailScreenViewModel(
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "更新系列名失败: $id", e)
-            }
-        }
-    }
-
-    fun deleteSelectedVolumes(onSeriesDeleted: () -> Unit = {}) {
-        val id = _seriesId.value ?: return
-        viewModelScope.launch {
-            val selectedIds = _selectedVolumes.value.toList()
-            if (selectedIds.isEmpty()) return@launch
-
-            try {
-                val series = seriesStream.value ?: return@launch
-                val totalCount = series.volumeCount
-                val selectedCount = selectedIds.size
-
-                if (selectedCount >= totalCount) {
-                    booksRepository.deleteSeriesById(id)
-                    onSeriesDeleted() 
-                } else {
-                    booksRepository.deleteVolumesByIds(selectedIds)
-                    val newCount = (totalCount - selectedCount).coerceAtLeast(0)
-                    booksRepository.updateSeries(series.copy(volumeCount = newCount))
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "批量删除操作失败", e)
             }
         }
     }

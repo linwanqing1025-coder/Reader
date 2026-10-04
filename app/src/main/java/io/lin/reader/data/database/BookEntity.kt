@@ -10,9 +10,9 @@ import androidx.room.Relation
 /** 
  * 书籍系列表 
  * @property id 主键（自增）
- * @property createTime 创建时间（用于排序）
  * @property seriesName 系列名（如《哈利波特》）
  * @property volumeCount 该系列的册数
+ * @property createTime 创建时间（用于排序）
  */
 @Entity(
     tableName = "series",
@@ -21,24 +21,23 @@ import androidx.room.Relation
 data class Series(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
-    val createTime: Long? = null,
-    val seriesName: String = "Default Series Name",
-    val volumeCount: Int = 1
+    val seriesName: String,
+    val volumeCount: Int,
+    val createTime: Long,
 )
 
 /** 
- * 单册书表，外键关联Series表
+ * 单册书表，外键关联 Series 表
  * @property id 主键（自增）
+ * @property seriesId 外键：关联对应的书籍系列 ID
  * @property volumeName 书名（如《哈利波特与死亡圣器》）
  * @property mimeType 记录文件类型，默认 "application/pdf"
+ * @property createTime 创建时间（用于排序）
  * @property bookFileUri 书本体文件 URI(Uri.toString())
  * @property coverUri 书封面 URI(Uri.toString())
- * @property totalPages 总页数
- * @property createTime 创建时间（用于排序）
- * @property lastReadPage 上次阅读页索引（0-based），-1 代表未读
- * @property lastReadTime 上次阅读时间， null 表示未读
+ * @property totalPages 总页数。若为 null，说明该文档为重排文档（如 EPUB），页数会动态变化；若非 null，代表该文档为固定版式（如 PDF）。
  * @property isFavorite 收藏功能：默认为 false
- * @property seriesId 外键：关联对应的书籍系列 ID
+ * @property history 历史阅读记录。若为 null，表示该书从未被阅读过。
  */
 @Entity(
     tableName = "volumes",
@@ -56,27 +55,34 @@ data class Series(
     ]
 )
 data class Volume(
+    // 键
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
-    val volumeName: String = "Default Volume Name",
-    val mimeType: String = "application/pdf",
+    val seriesId: Long,
+
+    // 基本信息
+    val volumeName: String,
+    val mimeType: String,
+    val createTime: Long,
     val bookFileUri: String,
     val coverUri: String? = null,
-    val totalPages: Int = 0,
-    val createTime: Long? = null,
-    val lastReadPage: Int = -1,
-    val lastReadTime: Long? = null,
+    val totalPages: Int? = 0,
+
+    // 收藏
     val isFavorite: Boolean = false,
-    val seriesId: Long
+
+    // 历史记录（组合 ReadingHistory）
+    @Embedded(prefix = "history_")
+    val history: ReadingHistory? = null,
 )
 
 /** 
  * 书签表，外键关联 Volumes 表 
  * @property id 主键（自增）
  * @property volumeId 外键：关联所属的书籍ID
- * @property label 书签名称
- * @property pageNumber 记录的页数
+ * @property label 书签名称（用户自定义的备注或默认名称）
  * @property addTime 添加书签的时间戳
+ * @property history 组合的阅读位置信息，不能为空，记录书签具体的定位数据。
  */
 @Entity(
     tableName = "bookmarks",
@@ -93,8 +99,26 @@ data class Bookmark(
     val id: Long = 0,
     val volumeId: Long,
     val label: String,
-    val pageNumber: Int,
-    val addTime: Long
+
+    // 书签具体的定位数据，不能为空
+    @Embedded(prefix = "pos_")
+    val history: ReadingHistory
+)
+
+/**
+ * 阅读历史记录
+ * @property mupdfMark MuPDF 底层的物理锚点。解决重排文档由于排版变化导致逻辑页码 `pageIndex` 失效的问题。
+ * @property time 上次阅读时间
+ * @property readProgress 阅读进度百分比 [0.0f ~ 1.0f]。作为重排文档书签 UI 展示的补充进度。
+ * @property pageIndex 记录的逻辑页索引。固定版式(PDF)有绝对页码；重排文档(EPUB)可为 null，因页码随排版改变。
+ * @property chapterInfo 从 Outline 获取的章节信息。设为 null 则说明该文档没有 Outline 。
+ */
+data class ReadingHistory(
+    val mupdfMark: Long,
+    val time: Long,
+    val readProgress: Float = 0.0f,
+    val pageIndex: Int? = null,
+    val chapterInfo: String? = null,
 )
 
 /** 

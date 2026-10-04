@@ -2,3 +2,6 @@
 0	13	0	clean	e2748a664891493
 1	18	0	clean	e2748a664891493
 0	28	0	clean	e2748a664891493
+6	3709	8118840629483696	CMakeFiles/reader_opencv.dir/reader_jni.cpp.o	b7d86eb007e84f98
+3714	5322	8118840645637699	D:/Luo/Developer/Android/MyProject/Reader/app/build/intermediates/cxx/RelWithDebInfo/b5f1s1f2/obj/arm64-v8a/libreader_opencv.so	b7781367fd5ff90b
+0	14	0	clean	e2748a664891493

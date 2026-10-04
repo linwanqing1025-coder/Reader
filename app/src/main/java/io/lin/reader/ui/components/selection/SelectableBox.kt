@@ -50,8 +50,8 @@ import androidx.compose.ui.zIndex
 @Composable
 fun SelectableBox(
     selected: Boolean,
-    onSelectedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
+    onSelectedChange: ((Boolean) -> Unit)? = null,
     shape: Shape = RoundedCornerShape(8.dp),
     activeColor: Color = MaterialTheme.colorScheme.primary,
     checkColor: Color = Color.White,
@@ -59,9 +59,9 @@ fun SelectableBox(
 ) {
     SelectableBoxImpl(
         selected = selected,
-        onSelectedChange = onSelectedChange,
         isSelectionMode = null,
         modifier = modifier,
+        onSelectedChange = onSelectedChange,
         shape = shape,
         activeColor = activeColor,
         checkColor = checkColor,
@@ -71,15 +71,19 @@ fun SelectableBox(
 
 /**
  * 模式二：选择模式感知 (Selection Mode Aware)。
+ *
+ * selected == true : 单击响应 onSelectedChange;
+ *
+ * selected == false : 单击响应 onClick.
  */
 @Composable
 fun SelectableBox(
     selected: Boolean,
-    onSelectedChange: (Boolean) -> Unit,
     isSelectionMode: Boolean,
     modifier: Modifier = Modifier,
-    onLongClick: (() -> Unit)? = null,
+    onSelectedChange: ((Boolean) -> Unit)? = null,
     onClick: (() -> Unit)? = null,
+    onLongClick: (() -> Unit)? = null,
     shape: Shape = RoundedCornerShape(8.dp),
     activeColor: Color = MaterialTheme.colorScheme.primary,
     checkColor: Color = Color.White,
@@ -87,10 +91,10 @@ fun SelectableBox(
 ) {
     SelectableBoxImpl(
         selected = selected,
-        onSelectedChange = onSelectedChange,
         isSelectionMode = isSelectionMode,
-        onLongClick = onLongClick,
+        onSelectedChange = onSelectedChange,
         onClick = onClick,
+        onLongClick = onLongClick,
         modifier = modifier,
         shape = shape,
         activeColor = activeColor,
@@ -105,11 +109,11 @@ fun SelectableBox(
 @Composable
 private fun SelectableBoxImpl(
     selected: Boolean,
-    onSelectedChange: (Boolean) -> Unit,
     isSelectionMode: Boolean?,
     modifier: Modifier = Modifier,
-    onLongClick: (() -> Unit)? = null,
+    onSelectedChange: ((Boolean) -> Unit)? = null,
     onClick: (() -> Unit)? = null,
+    onLongClick: (() -> Unit)? = null,
     shape: Shape = RoundedCornerShape(8.dp),
     activeColor: Color = MaterialTheme.colorScheme.primary,
     checkColor: Color = Color.White,
@@ -161,10 +165,10 @@ private fun SelectableBoxImpl(
             .combinedClickable(
                 onClick = {
                     if (isModeTwo) {
-                        if (selectionActive) onSelectedChange(!selected)
+                        if (selectionActive) onSelectedChange?.invoke(!selected)
                         else onClick?.invoke()
                     } else {
-                        onSelectedChange(!selected)
+                        onSelectedChange?.invoke(!selected)
                     }
                 },
                 onLongClick = onLongClick
@@ -198,7 +202,7 @@ private fun SelectableBoxImpl(
                     showUncheckedBorder = showCheckboxBorder,
                     activeColor = activeColor,
                     checkColor = checkColor,
-                    onCheckedChange = { onSelectedChange(it) }
+                    onCheckedChange = { onSelectedChange?.invoke(!selected) }
                 )
             }
         }
