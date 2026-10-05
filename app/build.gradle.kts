@@ -58,8 +58,11 @@ android {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
-            // 使用上面定义的 release 签名配置
-            signingConfig = signingConfigs.getByName("release")
+            // 只有在配置了 storeFile 时才使用本地签名配置
+            val path = localProperties.getProperty("signing.storeFile")
+            if (path != null) {
+                signingConfig = signingConfigs.getByName("release")
+            }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
